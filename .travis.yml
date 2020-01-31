@@ -1,11 +1,9 @@
 language: cpp
-sudo: false
 dist: trusty
 cache: ccache
 
 os:
   - linux
-  - osx
   
 addons:
   apt:
@@ -21,38 +19,12 @@ branches:
   only:
     - 'master'
 
-before_install:
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
-      brew update;
-    fi;
-
-install:
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
-      brew install qt gdb
-      && chmod -R 755 /usr/local/opt/qt/*;
-    fi;
-
 before_script:
-  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
       export DISPLAY=:99.0
       && sh -e /etc/init.d/xvfb start;
-    fi;
 
 script:
-  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
-      source /opt/qt510/bin/qt510-env.sh;
-    fi
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
-      QTDIR="/usr/local/opt/qt/"
-      && PATH="${QTDIR}/bin:$PATH"
-      && LDFLAGS=-L${QTDIR}/lib
-      && CPPFLAGS=-I${QTDIR}/include;
-    fi;
+  - source /opt/qt510/bin/qt510-env.sh;
   - qmake ./WPanda.pro -r
-  - make -j4
-  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
-      ./test/WPanda-test;
-    fi
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
-      test/WPanda-test.app/Contents/MacOS/WPanda-test;
-    fi;
+  - make -j2
+  - ./test/WPanda-test;
