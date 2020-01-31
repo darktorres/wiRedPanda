@@ -16,8 +16,9 @@ matrix:
               - qt57multimedia
             
         before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
+            - "export DISPLAY=:99.0"
+            - "sh -e /etc/init.d/xvfb start"
+            - sleep 3 # give xvfb some time to start
       
         script:
           - source /opt/qt57/bin/qt57-env.sh
@@ -38,9 +39,10 @@ matrix:
               - qt57multimedia
 
         before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                  
+            - "export DISPLAY=:99.0"
+            - "sh -e /etc/init.d/xvfb start"
+            - sleep 3 # give xvfb some time to start
+             
         script:
           - source /opt/qt57/bin/qt57-env.sh
           - /opt/qt57/bin/qmake -r ./WPanda.pro
@@ -58,11 +60,13 @@ matrix:
               - qt58base
               - qt58charts-no-lgpl
               - qt58multimedia
+              - libpulse-dev
 
         before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                  
+            - "export DISPLAY=:99.0"
+            - "sh -e /etc/init.d/xvfb start"
+            - sleep 3 # give xvfb some time to start
+                
         script:
           - source /opt/qt58/bin/qt58-env.sh
           - /opt/qt58/bin/qmake -r ./WPanda.pro
@@ -80,11 +84,13 @@ matrix:
               - qt58base
               - qt58charts-no-lgpl
               - qt58multimedia
- 
+              - libpulse-dev
+
         before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-       
+            - "export DISPLAY=:99.0"
+            - "sh -e /etc/init.d/xvfb start"
+            - sleep 3 # give xvfb some time to start
+      
         script:
           - source /opt/qt58/bin/qt58-env.sh
           - /opt/qt58/bin/qmake -r ./WPanda.pro
@@ -104,9 +110,10 @@ matrix:
               - qt59multimedia
 
         before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                  
+            - "export DISPLAY=:99.0"
+            - "sh -e /etc/init.d/xvfb start"
+            - sleep 3 # give xvfb some time to start
+              
         script:
           - source /opt/qt59/bin/qt59-env.sh
           - /opt/qt59/bin/qmake -r ./WPanda.pro
@@ -126,9 +133,10 @@ matrix:
               - qt59multimedia
 
         before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                  
+            - "export DISPLAY=:99.0"
+            - "sh -e /etc/init.d/xvfb start"
+            - sleep 3 # give xvfb some time to start
+            
         script:
           - source /opt/qt59/bin/qt59-env.sh
           - /opt/qt59/bin/qmake -r ./WPanda.pro
@@ -148,9 +156,10 @@ matrix:
               - qt510multimedia
 
         before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                  
+            - "export DISPLAY=:99.0"
+            - "sh -e /etc/init.d/xvfb start"
+            - sleep 3 # give xvfb some time to start
+           
         script:
           - source /opt/qt510/bin/qt510-env.sh
           - /opt/qt510/bin/qmake -r ./WPanda.pro
@@ -170,9 +179,10 @@ matrix:
               - qt510multimedia
 
         before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                  
+            - "export DISPLAY=:99.0"
+            - "sh -e /etc/init.d/xvfb start"
+            - sleep 3 # give xvfb some time to start
+             
         script:
           - source /opt/qt510/bin/qt510-env.sh
           - /opt/qt510/bin/qmake -r ./WPanda.pro
@@ -181,6 +191,7 @@ matrix:
 
       - env: Qt5.11.3_Ubuntu_18.04
         dist: bionic
+        services: xvfb
         compiler: gcc
         addons:
           apt:
@@ -192,11 +203,7 @@ matrix:
               - qt511multimedia
               - mesa-common-dev
               - libgl1-mesa-dev
-
-        before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                  
+      
         script:
           - source /opt/qt511/bin/qt511-env.sh
           - /opt/qt511/bin/qmake -r ./WPanda.pro
@@ -205,6 +212,7 @@ matrix:
 
       - env: Qt5.11.3_Ubuntu_18.04
         dist: bionic
+        services: xvfb
         compiler: clang
         addons:
           apt:
@@ -216,11 +224,7 @@ matrix:
               - qt511multimedia
               - mesa-common-dev
               - libgl1-mesa-dev
-
-        before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                    
+          
         script:
           - source /opt/qt511/bin/qt511-env.sh
           - /opt/qt511/bin/qmake -r ./WPanda.pro
@@ -229,6 +233,7 @@ matrix:
           
       - env: Qt5.12.6_Ubuntu_18.04
         dist: bionic
+        services: xvfb
         compiler: gcc
         addons:
           apt:
@@ -240,11 +245,7 @@ matrix:
               - qt512multimedia
               - mesa-common-dev
               - libgl1-mesa-dev
-
-        before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                    
+        
         script:
           - source /opt/qt512/bin/qt512-env.sh
           - /opt/qt512/bin/qmake -r ./WPanda.pro
@@ -253,6 +254,7 @@ matrix:
           
       - env: Qt5.12.6_Ubuntu_18.04
         dist: bionic
+        services: xvfb
         compiler: clang
         addons:
           apt:
@@ -264,11 +266,7 @@ matrix:
               - qt512multimedia
               - mesa-common-dev
               - libgl1-mesa-dev
-
-        before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                    
+          
         script:
           - source /opt/qt512/bin/qt512-env.sh
           - /opt/qt512/bin/qmake -r ./WPanda.pro
@@ -277,6 +275,7 @@ matrix:
 
       - env: Qt5.13.2_Ubuntu_18.04
         dist: bionic
+        services: xvfb
         compiler: gcc
         addons:
           apt:
@@ -288,11 +287,7 @@ matrix:
               - qt513multimedia
               - mesa-common-dev
               - libgl1-mesa-dev
-
-        before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                    
+      
         script:
           - source /opt/qt513/bin/qt513-env.sh
           - /opt/qt513/bin/qmake -r ./WPanda.pro
@@ -301,6 +296,7 @@ matrix:
           
       - env: Qt5.13.2_Ubuntu_18.04
         dist: bionic
+        services: xvfb
         compiler: clang
         addons:
           apt:
@@ -312,11 +308,7 @@ matrix:
               - qt513multimedia
               - mesa-common-dev
               - libgl1-mesa-dev
-
-        before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                    
+         
         script:
           - source /opt/qt513/bin/qt513-env.sh
           - /opt/qt513/bin/qmake -r ./WPanda.pro
@@ -325,6 +317,7 @@ matrix:
 
       - env: Qt5.14.0_Ubuntu_18.04
         dist: bionic
+        services: xvfb
         compiler: gcc
         addons:
           apt:
@@ -336,11 +329,7 @@ matrix:
               - qt514multimedia
               - mesa-common-dev
               - libgl1-mesa-dev
-
-        before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                   
+        
         script:
           - source /opt/qt514/bin/qt514-env.sh
           - /opt/qt514/bin/qmake -r ./WPanda.pro
@@ -349,6 +338,7 @@ matrix:
           
       - env: Qt5.14.0_Ubuntu_18.04
         dist: bionic
+        services: xvfb
         compiler: clang
         addons:
           apt:
@@ -360,11 +350,7 @@ matrix:
               - qt514multimedia
               - mesa-common-dev
               - libgl1-mesa-dev
-
-        before_script:
-            export DISPLAY=:99.0
-            && sh -e /etc/init.d/xvfb start;
-                   
+     
         script:
           - source /opt/qt514/bin/qt514-env.sh
           - /opt/qt514/bin/qmake -r ./WPanda.pro
