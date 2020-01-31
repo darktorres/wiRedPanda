@@ -1,30 +1,375 @@
+os: linux
 language: cpp
-dist: trusty
 cache: ccache
 
-os:
-  - linux
-  
-addons:
-  apt:
-    sources:
-    - sourceline: 'ppa:beineri/opt-qt-5.10.1-trusty'
-    packages:
-    - qt510base
-    - qt510charts-no-lgpl
-    - qt510multimedia
-    - dh-make
+matrix:          
+      - env: Qt5.7.1_Ubuntu_14.04
+        dist: trusty
+        compiler: gcc
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt571-trusty'
+            packages:
+              - qt57base
+              - qt57charts-no-lgpl
+              - qt57multimedia
+            
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+      
+        script:
+          - source /opt/qt57/bin/qt57-env.sh
+          - /opt/qt57/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
 
-branches:
-  only:
-    - 'master'
+      - env: Qt5.7.1_Ubuntu_14.04
+        dist: trusty
+        compiler: clang
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt571-trusty'
+            packages:
+              - qt57base
+              - qt57charts-no-lgpl
+              - qt57multimedia
 
-before_script:
-      export DISPLAY=:99.0
-      && sh -e /etc/init.d/xvfb start;
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                  
+        script:
+          - source /opt/qt57/bin/qt57-env.sh
+          - /opt/qt57/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+          
+      - env: Qt5.8.0_Ubuntu_14.04
+        dist: trusty
+        compiler: gcc
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt58-trusty'
+            packages:
+              - qt58base
+              - qt58charts-no-lgpl
+              - qt58multimedia
 
-script:
-  - source /opt/qt510/bin/qt510-env.sh;
-  - qmake ./WPanda.pro -r
-  - make -j2
-  - ./test/WPanda-test;
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                  
+        script:
+          - source /opt/qt58/bin/qt58-env.sh
+          - /opt/qt58/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+
+      - env: Qt5.8.0_Ubuntu_14.04
+        dist: trusty
+        compiler: clang
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt58-trusty'
+            packages:
+              - qt58base
+              - qt58charts-no-lgpl
+              - qt58multimedia
+ 
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+       
+        script:
+          - source /opt/qt58/bin/qt58-env.sh
+          - /opt/qt58/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+          
+      - env: Qt5.9.7_Ubuntu_14.04
+        dist: trusty
+        compiler: gcc
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt597-trusty'
+            packages:
+              - qt59base
+              - qt59charts-no-lgpl
+              - qt59multimedia
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                  
+        script:
+          - source /opt/qt59/bin/qt59-env.sh
+          - /opt/qt59/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+
+      - env: Qt5.9.7_Ubuntu_14.04
+        dist: trusty
+        compiler: clang
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt597-trusty'
+            packages:
+              - qt59base
+              - qt59charts-no-lgpl
+              - qt59multimedia
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                  
+        script:
+          - source /opt/qt59/bin/qt59-env.sh
+          - /opt/qt59/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+          
+      - env: Qt5.10.1_Ubuntu_14.04
+        dist: trusty
+        compiler: gcc
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.10.1-trusty'
+            packages:
+              - qt510base
+              - qt510charts-no-lgpl
+              - qt510multimedia
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                  
+        script:
+          - source /opt/qt510/bin/qt510-env.sh
+          - /opt/qt510/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+
+      - env: Qt5.10.1_Ubuntu_14.04
+        dist: trusty
+        compiler: clang
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.10.1-trusty'
+            packages:
+              - qt510base
+              - qt510charts-no-lgpl
+              - qt510multimedia
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                  
+        script:
+          - source /opt/qt510/bin/qt510-env.sh
+          - /opt/qt510/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+
+      - env: Qt5.11.3_Ubuntu_18.04
+        dist: bionic
+        compiler: gcc
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.11.3-bionic'
+            packages:
+              - qt511base
+              - qt511charts-no-lgpl
+              - qt511multimedia
+              - mesa-common-dev
+              - libgl1-mesa-dev
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                  
+        script:
+          - source /opt/qt511/bin/qt511-env.sh
+          - /opt/qt511/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+
+      - env: Qt5.11.3_Ubuntu_18.04
+        dist: bionic
+        compiler: clang
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.11.3-bionic'
+            packages:
+              - qt511base
+              - qt511charts-no-lgpl
+              - qt511multimedia
+              - mesa-common-dev
+              - libgl1-mesa-dev
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                    
+        script:
+          - source /opt/qt511/bin/qt511-env.sh
+          - /opt/qt511/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+          
+      - env: Qt5.12.6_Ubuntu_18.04
+        dist: bionic
+        compiler: gcc
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.12.6-bionic'
+            packages:
+              - qt512base
+              - qt512charts-no-lgpl
+              - qt512multimedia
+              - mesa-common-dev
+              - libgl1-mesa-dev
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                    
+        script:
+          - source /opt/qt512/bin/qt512-env.sh
+          - /opt/qt512/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+          
+      - env: Qt5.12.6_Ubuntu_18.04
+        dist: bionic
+        compiler: clang
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.12.6-bionic'
+            packages:
+              - qt512base
+              - qt512charts-no-lgpl
+              - qt512multimedia
+              - mesa-common-dev
+              - libgl1-mesa-dev
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                    
+        script:
+          - source /opt/qt512/bin/qt512-env.sh
+          - /opt/qt512/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+
+      - env: Qt5.13.2_Ubuntu_18.04
+        dist: bionic
+        compiler: gcc
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.13.2-bionic'
+            packages:
+              - qt513base
+              - qt513charts-no-lgpl
+              - qt513multimedia
+              - mesa-common-dev
+              - libgl1-mesa-dev
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                    
+        script:
+          - source /opt/qt513/bin/qt513-env.sh
+          - /opt/qt513/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+          
+      - env: Qt5.13.2_Ubuntu_18.04
+        dist: bionic
+        compiler: clang
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.13.2-bionic'
+            packages:
+              - qt513base
+              - qt513charts-no-lgpl
+              - qt513multimedia
+              - mesa-common-dev
+              - libgl1-mesa-dev
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                    
+        script:
+          - source /opt/qt513/bin/qt513-env.sh
+          - /opt/qt513/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;  
+
+      - env: Qt5.14.0_Ubuntu_18.04
+        dist: bionic
+        compiler: gcc
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.14.0-bionic'
+            packages:
+              - qt514base
+              - qt514charts-no-lgpl
+              - qt514multimedia
+              - mesa-common-dev
+              - libgl1-mesa-dev
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                   
+        script:
+          - source /opt/qt514/bin/qt514-env.sh
+          - /opt/qt514/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+          
+      - env: Qt5.14.0_Ubuntu_18.04
+        dist: bionic
+        compiler: clang
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.14.0-bionic'
+            packages:
+              - qt514base
+              - qt514charts-no-lgpl
+              - qt514multimedia
+              - mesa-common-dev
+              - libgl1-mesa-dev
+
+        before_script:
+            export DISPLAY=:99.0
+            && sh -e /etc/init.d/xvfb start;
+                   
+        script:
+          - source /opt/qt514/bin/qt514-env.sh
+          - /opt/qt514/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;           
+          
+notifications:
+  email: false
