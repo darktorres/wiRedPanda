@@ -357,14 +357,14 @@ matrix:
           - make -j2
           - ./test/WPanda-test;
 
-      - env: Qt5.15.0_Ubuntu_18.04
-        dist: bionic
+      - env: Qt5.15.0_Ubuntu_16.04
+        dist: xenial
         services: xvfb
         compiler: gcc
         addons:
           apt:
             sources:
-              - sourceline: 'ppa:beineri/opt-qt-5.15.0-bionic'
+              - sourceline: 'ppa:beineri/opt-qt-5.15.0-xenial'
             packages:
               - qt515base
               - qt515charts-no-lgpl
@@ -378,14 +378,14 @@ matrix:
           - make -j2
           - ./test/WPanda-test;
           
-      - env: Qt5.15.0_Ubuntu_18.04
-        dist: bionic
+      - env: Qt5.15.0_Ubuntu_16.04
+        dist: xenial
         services: xvfb
         compiler: clang
         addons:
           apt:
             sources:
-              - sourceline: 'ppa:beineri/opt-qt-5.15.0-bionic'
+              - sourceline: 'ppa:beineri/opt-qt-5.15.0-xenial'
             packages:
               - qt515base
               - qt515charts-no-lgpl
