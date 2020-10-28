@@ -5,12 +5,14 @@
 #include "testlogicelements.h"
 #include "testsimulationcontroller.h"
 #include "testwaveform.h"
+#include "thememanager.h"
 
 #include <QtTest>
 
 int main( int argc, char **argv ) {
   QApplication a( argc, argv );
-  Comment::setVerbosity( -1 );
+  ThemeManager::globalMngr = new ThemeManager();
+  Comment::setVerbosity(-1);
   a.setOrganizationName( "WPanda" );
   a.setApplicationName( "WiredPanda" );
   a.setApplicationVersion( APP_VERSION );
