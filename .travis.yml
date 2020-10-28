@@ -231,14 +231,14 @@ matrix:
           - make -j2
           - ./test/WPanda-test;
           
-      - env: Qt5.12.6_Ubuntu_18.04
+      - env: Qt5.12.9_Ubuntu_18.04
         dist: bionic
         services: xvfb
         compiler: gcc
         addons:
           apt:
             sources:
-              - sourceline: 'ppa:beineri/opt-qt-5.12.6-bionic'
+              - sourceline: 'ppa:beineri/opt-qt-5.12.9-bionic'
             packages:
               - qt512base
               - qt512charts-no-lgpl
@@ -252,14 +252,14 @@ matrix:
           - make -j2
           - ./test/WPanda-test;
           
-      - env: Qt5.12.6_Ubuntu_18.04
+      - env: Qt5.12.9_Ubuntu_18.04
         dist: bionic
         services: xvfb
         compiler: clang
         addons:
           apt:
             sources:
-              - sourceline: 'ppa:beineri/opt-qt-5.12.6-bionic'
+              - sourceline: 'ppa:beineri/opt-qt-5.12.9-bionic'
             packages:
               - qt512base
               - qt512charts-no-lgpl
@@ -315,14 +315,14 @@ matrix:
           - make -j2
           - ./test/WPanda-test;  
 
-      - env: Qt5.14.0_Ubuntu_18.04
+      - env: Qt5.14.2_Ubuntu_18.04
         dist: bionic
         services: xvfb
         compiler: gcc
         addons:
           apt:
             sources:
-              - sourceline: 'ppa:beineri/opt-qt-5.14.0-bionic'
+              - sourceline: 'ppa:beineri/opt-qt-5.14.2-bionic'
             packages:
               - qt514base
               - qt514charts-no-lgpl
@@ -336,14 +336,14 @@ matrix:
           - make -j2
           - ./test/WPanda-test;
           
-      - env: Qt5.14.0_Ubuntu_18.04
+      - env: Qt5.14.2_Ubuntu_18.04
         dist: bionic
         services: xvfb
         compiler: clang
         addons:
           apt:
             sources:
-              - sourceline: 'ppa:beineri/opt-qt-5.14.0-bionic'
+              - sourceline: 'ppa:beineri/opt-qt-5.14.2-bionic'
             packages:
               - qt514base
               - qt514charts-no-lgpl
@@ -354,6 +354,48 @@ matrix:
         script:
           - source /opt/qt514/bin/qt514-env.sh
           - /opt/qt514/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+
+      - env: Qt5.15.0_Ubuntu_18.04
+        dist: bionic
+        services: xvfb
+        compiler: gcc
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.15.0-bionic'
+            packages:
+              - qt515base
+              - qt515charts-no-lgpl
+              - qt515multimedia
+              - mesa-common-dev
+              - libgl1-mesa-dev
+        
+        script:
+          - source /opt/qt515/bin/qt515-env.sh
+          - /opt/qt515/bin/qmake -r ./WPanda.pro
+          - make -j2
+          - ./test/WPanda-test;
+          
+      - env: Qt5.15.0_Ubuntu_18.04
+        dist: bionic
+        services: xvfb
+        compiler: clang
+        addons:
+          apt:
+            sources:
+              - sourceline: 'ppa:beineri/opt-qt-5.15.0-bionic'
+            packages:
+              - qt515base
+              - qt515charts-no-lgpl
+              - qt515multimedia
+              - mesa-common-dev
+              - libgl1-mesa-dev
+     
+        script:
+          - source /opt/qt515/bin/qt515-env.sh
+          - /opt/qt515/bin/qmake -r ./WPanda.pro
           - make -j2
           - ./test/WPanda-test;           
           
