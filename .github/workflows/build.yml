@@ -11,13 +11,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        qt_version: [5.12.12, 5.13.2, 5.14.2, 5.15.2, 6.2.4, 6.3.2, 6.4.3, 6.5.3, 6.6.3, 6.7.1]
-
-# =================================
+        qt_version: [5.12.12, 5.13.2, 5.14.2, 5.15.2, 6.2.4, 6.3.2, 6.4.3, 6.5.3, 6.6.3, 6.7.2]
 
     runs-on: ${{ matrix.os }}
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
 
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
 
     steps:
     - uses: actions/checkout@v4
@@ -25,50 +23,33 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
-    - name: Install Qt5
-      if: startsWith(matrix.qt_version, '5')
+    - name: Setup Qt
       uses: jurplel/install-qt-action@v4
       with:
         version: ${{ matrix.qt_version }}
+        modules: ${{ startsWith(matrix.qt_version, '6') && 'qtmultimedia' || '' }}
         cache: true
 
-    - name: Install Qt6
-      if: startsWith(matrix.qt_version, '6')
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: ${{ matrix.qt_version }}
-        modules: qtmultimedia
-        cache: true
-
-    - name: ccache
+    - name: Setup ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
-        key: ${{ matrix.os }}
-
-# =================================
-
-    - name: Build Ubuntu
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt install libgstreamer-gl1.0-0
-        mkdir build
-        cd build
-        qmake ../WPanda.pro
-        make -j2
-
-    - name: Test Ubuntu
-      if: runner.os == 'Linux'
-      run: |
-        cd build/test
-        ./WPanda-test -platform offscreen
-
-# =================================
-
+        key: ${{ matrix.os }}-${{ matrix.qt_version }}
+        
     - name: Setup MSVC Toolchain
       if: runner.os == 'Windows'
       uses: pbeast/gha-setup-vsdevenv@master
 
-    - name: Build Windows
+    - name: Build and Test (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        mkdir build
+        cd build
+        qmake ../WPanda.pro
+        make -j$(nproc)
+        cd test
+        ./WPanda-test -platform offscreen
+
+    - name: Build and Test (Windows)
       if: runner.os == 'Windows'
       run: |
         choco install jom
@@ -76,26 +57,13 @@ jobs:
         cd build
         qmake ../WPanda.pro
         jom
-
-    - name: Test Windows
-      if: runner.os == 'Windows'
-      run: |
-        cd build
         jom check
 
-# =================================
-# https://bugreports.qt.io/browse/QTBUG-117225
-
-    - name: Build macOS
+    - name: Build and Test (macOS)
       if: runner.os == 'macOS'
       run: |
         mkdir build
         cd build
         qmake ../WPanda.pro -early QMAKE_DEFAULT_LIBDIRS=$(xcrun -show-sdk-path)/usr/lib
-        make -j3
-
-    - name: Test macOS
-      if: runner.os == 'macOS'
-      run: |
-        cd build
+        make -j$(sysctl -n hw.ncpu)
         make check
