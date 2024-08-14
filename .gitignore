@@ -1,9 +1,0 @@
-*.db
-
-_drafts/
-_site
-.sass-cache
-.DS_Store
-*.swp
-*.pro.user*
-.vscode
