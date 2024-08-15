@@ -18,7 +18,7 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
-# doesnt work with WASM 6.7.*
+    # doesn't work with WASM 6.7.*, must wait for aqtinstall fix
     - name: Setup Qt for Wasm
       uses: jurplel/install-qt-action@v4
       with:
@@ -57,3 +57,5 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./build
+        destination_dir: wasm
+        keep_files: true
