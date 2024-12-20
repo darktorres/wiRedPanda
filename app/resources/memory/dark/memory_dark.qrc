@@ -7,5 +7,7 @@
         <file>SR-flipflop.svg</file>
         <file>T-flipflop.svg</file>
         <file>T-latch.svg</file>
+        <file>../../../../../wiRedPanda-master/app/resources/memory/dark/SR-latch.svg</file>
     </qresource>
+    <qresource prefix="/"/>
 </RCC>
