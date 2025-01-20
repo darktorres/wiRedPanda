@@ -1001,6 +1001,16 @@ void GraphicElement::setHasFrequency(const bool hasFrequency)
     m_hasFrequency = hasFrequency;
 }
 
+bool GraphicElement::hasDelay() const
+{
+    return m_hasDelay;
+}
+
+void GraphicElement::setHasDelay(const bool hasDelay)
+{
+    m_hasDelay = hasDelay;
+}
+
 bool GraphicElement::hasLabel() const
 {
     return m_hasLabel;
@@ -1107,6 +1117,16 @@ float GraphicElement::frequency() const
 void GraphicElement::setFrequency(const float freq)
 {
     Q_UNUSED(freq)
+}
+
+float GraphicElement::delay() const
+{
+    return 0.0;
+}
+
+void GraphicElement::setDelay(const float delay)
+{
+    Q_UNUSED(delay)
 }
 
 void GraphicElement::setMinOutputSize(const int minOutputSize)
