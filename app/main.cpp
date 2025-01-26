@@ -8,13 +8,28 @@
 
 #include <QCommandLineParser>
 #include <QMessageBox>
+#include <QScopeGuard>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
 
+#include "../thirdparty/sentry/include/sentry.h"
+
 int main(int argc, char *argv[])
 {
+    sentry_options_t *options = sentry_options_new();
+    sentry_options_set_dsn(options, "https://719a4881adf6e678b198bf9aad6b4500@o4508704323469312.ingest.us.sentry.io/4508704326352896");
+    // This is also the default-path. For further information and recommendations:
+    // https://docs.sentry.io/platforms/native/configuration/options/#database-path
+    sentry_options_set_database_path(options, ".sentry-native");
+    sentry_options_set_release(options, "wiRedPanda@4.2.0");
+    sentry_options_set_debug(options, 0);
+    sentry_init(options);
+
+    // Make sure everything flushes
+    auto sentryClose = qScopeGuard([] { sentry_close(); });
+
     Comment::setVerbosity(-1);
 
 #ifdef Q_OS_WIN

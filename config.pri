@@ -25,6 +25,9 @@ wasm {
     QMAKE_LFLAGS += -sASYNCIFY -Os
 }
 
+INCLUDEPATH += $$PWD/thirdparty/sentry/include
+LIBS += -L$$PWD/thirdparty/sentry/lib -lsentry
+
 linux {
     MOLD_BIN = $$system(which mold)
 
@@ -80,11 +83,25 @@ win32 {
 }
 
 msvc {
+    # Increase warning level
     QMAKE_CXXFLAGS_WARN_ON ~= s/-W3/-W4
+
+    # Additional compiler flags
     QMAKE_CXXFLAGS += /permissive- /external:I $$[QT_INSTALL_PREFIX] /external:W0
+
+    # Debug-specific compiler flag
     QMAKE_CXXFLAGS_DEBUG += /Ob1
+
+    # Release-specific compiler and linker flags
     QMAKE_CXXFLAGS_RELEASE += /GL
     QMAKE_LFLAGS_RELEASE += /LTCG
+
+    # Enable PDB generation for both debug and release
+    QMAKE_CXXFLAGS_DEBUG += /Zi
+    QMAKE_LFLAGS_DEBUG += /DEBUG
+
+    QMAKE_CXXFLAGS_RELEASE += /Zi
+    QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF /PDB:release/my_app.pdb
 
     PRECOMPILED_HEADER = $$PWD/pch.h
     CONFIG += precompile_header
