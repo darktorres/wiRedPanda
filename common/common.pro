@@ -1,3 +1,8 @@
+TEMPLATE = lib
+CONFIG += staticlib
+
+TARGET = common
+
 equals(QT_MAJOR_VERSION, 5) : lessThan(QT_MINOR_VERSION, 12) {
     error("Use Qt 5.12 or newer")
 }
@@ -9,6 +14,8 @@ equals(QT_MAJOR_VERSION, 6) : !versionAtLeast(QT_VERSION, 6.2.0) {
 !qtHaveModule(multimedia) {
     error("QtMultimedia is not installed. Please install with Qt Maintenance Tool or with system repository")
 }
+
+# INCLUDEPATH += $$PWD
 
 VERSION = 4.2.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
@@ -86,8 +93,16 @@ msvc {
     QMAKE_CXXFLAGS_RELEASE += /GL
     QMAKE_LFLAGS_RELEASE += /LTCG
 
-    PRECOMPILED_HEADER = $$PWD/common/pch.h
+    PRECOMPILED_HEADER = pch.h
     CONFIG += precompile_header
+}
+
+*-g++ {
+    QMAKE_CXXFLAGS += -Wno-deprecated-copy -Wno-deprecated-enum-enum-conversion # can be removed after migrating to Qt6
+}
+
+*-clang {
+    QMAKE_CXXFLAGS += -Wno-deprecated-enum-enum-conversion # can be removed after migrating to Qt6
 }
 
 mac {
@@ -101,3 +116,84 @@ UI_HEADERS_DIR = build_files/ui
 UI_SOURCES_DIR = build_files/ui
 OBJECTS_DIR    = build_files/obj
 RCC_DIR        = build_files/rcc
+
+include(element/element.pri)
+include(logicelement/logicelement.pri)
+
+INCLUDEPATH += \
+    app \
+    arduino \
+    element \
+    logicelement \
+    nodes
+
+SOURCES += \
+    application.cpp \
+    arduino/codegenerator.cpp \
+    bewaveddolphin.cpp \
+    clockdialog.cpp \
+    commands.cpp \
+    common.cpp \
+    elementeditor.cpp \
+    elementfactory.cpp \
+    elementlabel.cpp \
+    elementmapping.cpp \
+    enums.cpp \
+    graphicelement.cpp \
+    graphicsview.cpp \
+    ic.cpp \
+    itemwithid.cpp \
+    lengthdialog.cpp \
+    logicelement.cpp \
+    mainwindow.cpp \
+    nodes/qneconnection.cpp \
+    nodes/qneport.cpp \
+    recentfiles.cpp \
+    scene.cpp \
+    serialization.cpp \
+    settings.cpp \
+    simulation.cpp \
+    simulationblocker.cpp \
+    thememanager.cpp \
+    trashbutton.cpp \
+    workspace.cpp
+
+HEADERS += \
+    application.h \
+    arduino/codegenerator.h \
+    bewaveddolphin.h \
+    clockdialog.h \
+    commands.h \
+    common.h \
+    elementeditor.h \
+    elementfactory.h \
+    elementlabel.h \
+    elementmapping.h \
+    enums.h \
+    globalproperties.h \
+    graphicelement.h \
+    graphicelementinput.h \
+    graphicsview.h \
+    ic.h \
+    itemwithid.h \
+    lengthdialog.h \
+    logicelement.h \
+    mainwindow.h \
+    nodes/qneconnection.h \
+    nodes/qneport.h \
+    recentfiles.h \
+    scene.h \
+    serialization.h \
+    settings.h \
+    simulation.h \
+    simulationblocker.h \
+    thememanager.h \
+    trashbutton.h \
+    workspace.h
+
+FORMS += \
+    bewaveddolphin.ui \
+    clockdialog.ui \
+    elementeditor.ui \
+    lengthdialog.ui \
+    mainwindow.ui

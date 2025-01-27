@@ -1,2 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS = app test
+SUBDIRS = common app test
+
+app.depends = common
+test.depends = common
