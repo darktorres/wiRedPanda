@@ -85,7 +85,7 @@ jobs:
       if: runner.os == 'Linux'
       with:
         fail_on_unmatched_files: true
-        files: 'wiRedPanda-$VERSION-Ubuntu-Qt5.AppImage'
+        files: 'wiRedPanda-*.AppImage'
 
 # =================================
 
