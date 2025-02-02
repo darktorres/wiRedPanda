@@ -65,21 +65,16 @@ jobs:
         cd build/test
         ./WPanda-test -platform offscreen
 
-    - name: Install go-appimage
+    - name: Create AppImage
       if: runner.os == 'Linux'
       run: |
-        wget https://github.com/probonopd/go-appimage/releases/download/continuous/go-appimage-linux-x86_64.AppImage
-        chmod +x go-appimage-linux-x86_64.AppImage
-        mv go-appimage-linux-x86_64.AppImage go-appimage
-
-    - name: Create AppImage (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        mkdir appimage
-        cp app/resources/wpanda.desktop appimage/wpanda.desktop
-        cp app/resources/wpanda.svg appimage/wpanda_icon.svg
-        cp build/app/wiredpanda appimage
-        VERSION=$VERSION ./go-appimage appimage/wiredpanda
+        wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
+        chmod +x appimagetool-*.AppImage
+        mkdir -p appdir/usr/share/applications
+        cp app/resources/wpanda.desktop appdir/usr/share/applications/wpanda.desktop
+        cp app/resources/wpanda.svg appdir/usr/share/icons/hicolor/scalable/apps/wpanda_icon.svg
+        cp build/app/wiredpanda appdir
+        VERSION=$VERSION ./appimagetool-*.AppImage -s deploy appdir/usr/share/applications/*.desktop
         mv wiRedPanda-$VERSION-x86_64.AppImage wiRedPanda-$VERSION-Ubuntu-Qt5.AppImage
 
     - name: Publish Ubuntu
