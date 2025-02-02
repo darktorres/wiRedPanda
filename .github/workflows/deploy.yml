@@ -78,14 +78,14 @@ jobs:
         cp app/resources/wpanda.svg appdir/usr/share/icons/hicolor/scalable/apps/wpanda_icon.svg
         ./appimagetool-*.AppImage -s deploy appdir/usr/share/applications/*.desktop
         VERSION=$VERSION ./appimagetool-*.AppImage ./appdir
-        dir
+        mv wiRedPanda-$VERSION-x86_64.AppImage wiRedPanda-$VERSION-Ubuntu-Qt5.AppImage
 
     - name: Publish Ubuntu
       uses: softprops/action-gh-release@v2
       if: runner.os == 'Linux'
       with:
         fail_on_unmatched_files: true
-        files: '*.AppImage'
+        files: 'wiRedPanda-$VERSION-Ubuntu-Qt5.AppImage'
 
 # =================================
 
