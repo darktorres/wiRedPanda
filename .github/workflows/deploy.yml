@@ -57,7 +57,7 @@ jobs:
         mkdir build
         cd build
         qmake ../WPanda.pro
-        make -j2
+        make -j
 
     - name: Test Ubuntu
       if: runner.os == 'Linux'
@@ -70,12 +70,13 @@ jobs:
       run: |
         wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
         chmod +x appimagetool-*.AppImage
+        mkdir -p appdir/usr/bin
         mkdir -p appdir/usr/share/applications
         mkdir -p appdir/usr/share/icons/hicolor/scalable/apps
+        cp build/app/wiredpanda appdir/usr/bin
         cp app/resources/wpanda.desktop appdir/usr/share/applications/wpanda.desktop
         cp app/resources/wpanda.svg appdir/usr/share/icons/hicolor/scalable/apps/wpanda_icon.svg
-        cp build/app/wiredpanda appdir
-        VERSION=$VERSION ./appimagetool-*.AppImage -s deploy appdir/usr/share/applications/*.desktop
+        ./appimagetool-*.AppImage -s deploy appdir/usr/share/applications/*.desktop
         mv wiRedPanda-$VERSION-x86_64.AppImage wiRedPanda-$VERSION-Ubuntu-Qt5.AppImage
 
     - name: Publish Ubuntu
