@@ -71,6 +71,7 @@ jobs:
         wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
         chmod +x appimagetool-*.AppImage
         mkdir -p appdir/usr/share/applications
+        mkdir -p appdir/usr/share/icons/hicolor/scalable/apps
         cp app/resources/wpanda.desktop appdir/usr/share/applications/wpanda.desktop
         cp app/resources/wpanda.svg appdir/usr/share/icons/hicolor/scalable/apps/wpanda_icon.svg
         cp build/app/wiredpanda appdir
