@@ -77,7 +77,7 @@ jobs:
         cp app/resources/wpanda.desktop appdir/usr/share/applications/wiredpanda.desktop
         cp app/resources/wpanda.svg appdir/usr/share/icons/hicolor/scalable/apps/wpanda_icon.svg
         ./appimagetool-*.AppImage -s deploy appdir/usr/share/applications/*.desktop
-        mv wiRedPanda-$VERSION-x86_64.AppImage wiRedPanda-$VERSION-Ubuntu-Qt5.AppImage
+        dir
 
     - name: Publish Ubuntu
       uses: softprops/action-gh-release@v2
