@@ -46,7 +46,11 @@ if(CCACHE_BIN)
     set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_BIN})
 endif()
 
-set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
+if (QT_VERSION_MAJOR EQUAL 5)
+    set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "macOS architectures" FORCE)
+else()
+    set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "macOS architectures" FORCE)
+endif()
 
 include(CMakeSources.cmake)
 
