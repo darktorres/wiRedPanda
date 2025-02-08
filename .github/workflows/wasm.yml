@@ -18,33 +18,35 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
-    # doesn't work with WASM 6.7.*, must wait for aqtinstall fix
-    - name: Setup Qt for WASM
-      uses: jurplel/install-qt-action@v4
+    - name: Install Qt6
+      uses: Kidev/install-qt-action@v4.4.2
       with:
-        version: 6.6.3
+        version: 6.8.2
+        host: all_os
+        target: wasm
         arch: wasm_multithread
         modules: qtmultimedia qtimageformats
         cache: true
+        aqtversion: ==3.2.*
         
-    - name: Setup emscripten
+    - name: Install emscripten
       run: |
         git clone https://github.com/emscripten-core/emsdk
         cd emsdk
-        ./emsdk install 3.1.37
-        ./emsdk activate 3.1.37
+        ./emsdk install 3.1.56
+        ./emsdk activate 3.1.56
 
-    - name: Setup ccache
+    - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
-        key: wasm-ubuntu-6.6.3
+        key: wasm-ubuntu-6.8.2
 
     - name: Build WASM
       run: |
         source ./emsdk/emsdk_env.sh
         mkdir build
         cd build
-        qmake ../app/app.pro
+        ../../Qt/6.8.2/wasm_multithread/bin/qmake ../app/app.pro
         make -j4
         rm -rf ./build_files
         cp wiredpanda.html index.html
