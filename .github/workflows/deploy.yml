@@ -135,7 +135,6 @@ jobs:
         cp ../thirdparty/sentry/bin/crashpad_handler.exe ./app
         cp ../thirdparty/sentry/bin/sentry.dll ./app
         cp ../thirdparty/sentry/bin/crashpad_wer.dll ./app
-        cp ../thirdparty/sentry/lib/libsentry.lib ./app
         cp ../thirdparty/sentry/bin/sentry.dll ./test
 
     - name: Test Windows
