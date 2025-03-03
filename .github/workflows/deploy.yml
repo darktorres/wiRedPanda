@@ -27,6 +27,17 @@ jobs:
     - name: Extract Version
       run: echo "VERSION=$(echo $GITHUB_REF | sed 's|refs/tags/||')" >> $GITHUB_ENV
       shell: bash
+
+    - name: Install Sentry CLI
+      run: |
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/getsentry/sentry-cli/releases/latest | jq -r .tag_name)
+          curl -LO "https://github.com/getsentry/sentry-cli/releases/download/$LATEST_VERSION/sentry-cli-Windows-x86_64.exe"
+          mv sentry-cli-Windows-x86_64.exe sentry-cli.exe
+        else
+          curl -sL https://sentry.io/get-cli/ | bash
+        fi
+      shell: bash
     
     - name: Install Qt5 32bit
       if: matrix.os == 'windows-latest'
@@ -52,6 +63,17 @@ jobs:
 
 # =================================
 
+    - name: Compile Sentry SDK
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt install libcurl4-openssl-dev
+        git clone --recursive https://github.com/getsentry/sentry-native.git
+        mkdir -p sentry-native/build
+        cd sentry-native/build
+        cmake .. -B build -D SENTRY_BACKEND=crashpad -D CMAKE_BUILD_TYPE=RelWithDebInfo
+        cmake --build build --parallel
+        cmake --install build --prefix ../../thirdparty/sentry
+
     - name: Build Ubuntu
       if: runner.os == 'Linux'
       run: |
@@ -60,6 +82,9 @@ jobs:
         cd build
         qmake ../WPanda.pro
         make -j4
+        cp ../thirdparty/sentry/bin/crashpad_handler ./app
+        cp ../thirdparty/sentry/lib/libsentry.so ./app
+        cp ../thirdparty/sentry/lib/libsentry.so ./test
 
     - name: Test Ubuntu
       if: runner.os == 'Linux'
@@ -95,6 +120,16 @@ jobs:
       with:
         arch: x86
 
+    - name: Compile Sentry SDK
+      if: runner.os == 'Windows'
+      run: |
+        git clone --recursive https://github.com/getsentry/sentry-native.git
+        mkdir -p sentry-native/build
+        cd sentry-native/build
+        cmake .. -B build -G "Visual Studio 17 2022" -A Win32
+        cmake --build build --config RelWithDebInfo
+        cmake --install build --prefix ../../thirdparty/sentry --config RelWithDebInfo
+
     - name: Build Windows
       if: runner.os == 'Windows'
       run: |
@@ -103,6 +138,10 @@ jobs:
         cd build
         qmake ../WPanda.pro
         jom
+        cp ../thirdparty/sentry/bin/crashpad_handler.exe ./app/release
+        cp ../thirdparty/sentry/bin/sentry.dll ./app/release
+        cp ../thirdparty/sentry/bin/crashpad_wer.dll ./app/release
+        cp ../thirdparty/sentry/bin/sentry.dll ./test/release
 
     - name: Test Windows
       if: runner.os == 'Windows'
@@ -122,6 +161,16 @@ jobs:
         ren release wiredpanda-$env:VERSION
         Compress-Archive -Path wiredpanda-$env:VERSION -DestinationPath wiRedPanda-$env:VERSION-Windows-Qt5-Portable.zip
 
+    - name: Upload Debug Symbols to Sentry
+      if: runner.os == 'Windows'
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      run: |
+        ./sentry-cli.exe login --auth-token "$SENTRY_AUTH_TOKEN"
+        ./sentry-cli.exe releases new "wiredpanda@$VERSION" -p wiredpanda
+        ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda build/app/
+      shell: bash
+
     - name: Publish Windows
       uses: softprops/action-gh-release@v2
       if: startsWith(matrix.os, 'windows')
@@ -131,6 +180,16 @@ jobs:
 
 # =================================
 
+    - name: Compile Sentry SDK
+      if: runner.os == 'macOS'
+      run: |
+        git clone --recursive https://github.com/getsentry/sentry-native.git
+        mkdir -p sentry-native/build
+        cd sentry-native/build
+        cmake .. -B build -D SENTRY_BACKEND=crashpad -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+        cmake --build build --parallel
+        cmake --install build --prefix ../../thirdparty/sentry
+
     - name: Build macOS
       if: runner.os == 'macOS'
       run: |
@@ -139,6 +198,9 @@ jobs:
         # workaround for https://bugreports.qt.io/browse/QTBUG-117225
         qmake ../WPanda.pro -early QMAKE_DEFAULT_LIBDIRS=$(xcrun -show-sdk-path)/usr/lib
         make -j3
+        cp ../thirdparty/sentry/bin/crashpad_handler ./app
+        cp ../thirdparty/sentry/lib/libsentry.dylib ./app
+        cp ../thirdparty/sentry/lib/libsentry.dylib ./test
 
     - name: Test macOS
       if: runner.os == 'macOS'
