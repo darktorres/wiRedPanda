@@ -26,7 +26,15 @@ wasm {
 }
 
 INCLUDEPATH += $$PWD/thirdparty/sentry/include
-LIBS += -L$$PWD/thirdparty/sentry/lib -lsentry
+
+win32-msvc {
+    LIBS += -L$$PWD/thirdparty/sentry/lib -lsentry.lib
+} else:win32-g++ {
+    LIBS += -L$$PWD/thirdparty/sentry/lib -lsentry
+} else {
+    LIBS += -L$$PWD/thirdparty/sentry/lib -lsentry
+}
+
 
 linux {
     MOLD_BIN = $$system(which mold)
