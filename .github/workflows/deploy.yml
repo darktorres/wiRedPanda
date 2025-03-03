@@ -27,6 +27,11 @@ jobs:
     - name: Extract Version
       run: echo "VERSION=$(echo $GITHUB_REF | sed 's|refs/tags/||')" >> $GITHUB_ENV
       shell: bash
+
+    - name: Install Sentry CLI
+      run: |
+        curl -sL https://sentry.io/get-cli/ | bash
+      shell: bash
     
     - name: Install Qt5 32bit
       if: matrix.os == 'windows-latest'
@@ -51,6 +56,17 @@ jobs:
         key: ${{ matrix.os }}-5.15.2
 
 # =================================
+
+    - name: Compile Sentry SDK
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt install libcurl4-openssl-dev
+        git clone --recursive https://github.com/getsentry/sentry-native.git
+        mkdir -p sentry-native/build
+        cd sentry-native/build
+        cmake .. -B build -D SENTRY_BACKEND=crashpad -D CMAKE_BUILD_TYPE=RelWithDebInfo
+        cmake --build build --parallel
+        cmake --install build --prefix ../../thirdparty/sentry
 
     - name: Build Ubuntu
       if: runner.os == 'Linux'
@@ -95,6 +111,16 @@ jobs:
       with:
         arch: x86
 
+    - name: Compile Sentry SDK
+      if: runner.os == 'Windows'
+      run: |
+        git clone --recursive https://github.com/getsentry/sentry-native.git
+        mkdir -p sentry-native/build
+        cd sentry-native/build
+        cmake .. -B build
+        cmake --build build --config RelWithDebInfo
+        cmake --install build --prefix ../../thirdparty/sentry --config RelWithDebInfo
+
     - name: Build Windows
       if: runner.os == 'Windows'
       run: |
@@ -122,6 +148,12 @@ jobs:
         ren release wiredpanda-$env:VERSION
         Compress-Archive -Path wiredpanda-$env:VERSION -DestinationPath wiRedPanda-$env:VERSION-Windows-Qt5-Portable.zip
 
+    - name: Upload Debug Symbols to Sentry
+      run: |
+        sentry-cli upload-dif --org your-org --project your-project build/app/*.pdb
+      shell: bash
+      if: runner.os == 'Windows'
+
     - name: Publish Windows
       uses: softprops/action-gh-release@v2
       if: startsWith(matrix.os, 'windows')
@@ -130,6 +162,16 @@ jobs:
         files: 'build/app/*.zip'
 
 # =================================
+
+    - name: Compile Sentry SDK
+      if: runner.os == 'macOS'
+      run: |
+        git clone --recursive https://github.com/getsentry/sentry-native.git
+        mkdir -p sentry-native/build
+        cd sentry-native/build
+        cmake .. -B build -D SENTRY_BACKEND=crashpad -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+        cmake --build build --parallel
+        cmake --install build --prefix ../../thirdparty/sentry
 
     - name: Build macOS
       if: runner.os == 'macOS'
