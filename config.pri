@@ -21,8 +21,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
 DEFINES += QT_MESSAGELOGCONTEXT
 
-QMAKE_LFLAGS += -Wl,-rpath,\$$ORIGIN
-
 wasm {
     QMAKE_LFLAGS += -sASYNCIFY -Os
 }
@@ -67,7 +65,8 @@ linux-clang {
     }
 }
 
-unix: QMAKE_RPATHDIR += ${ORIGIN}/lib
+unix: QMAKE_RPATHDIR += ${ORIGIN}
+# unix: QMAKE_LFLAGS += -Wl,-rpath,\$$ORIGIN
 
 linux | mac {
     CCACHE_BIN = $$system(which ccache)
