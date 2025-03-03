@@ -120,7 +120,7 @@ jobs:
         git clone --recursive https://github.com/getsentry/sentry-native.git
         mkdir -p sentry-native/build
         cd sentry-native/build
-        cmake .. -B build
+        cmake .. -B build -G "Visual Studio 17 2022" -A Win32
         cmake --build build --config RelWithDebInfo
         cmake --install build --prefix ../../thirdparty/sentry --config RelWithDebInfo
 
