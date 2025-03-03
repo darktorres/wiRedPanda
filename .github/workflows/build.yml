@@ -56,6 +56,17 @@ jobs:
 
 # =================================
 
+    - name: Compile Sentry SDK
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt install libcurl4-openssl-dev
+        git clone --recursive https://github.com/getsentry/sentry-native.git
+        mkdir -p sentry-native/build
+        cd sentry-native/build
+        cmake .. -B build -D SENTRY_BACKEND=crashpad -D CMAKE_BUILD_TYPE=RelWithDebInfo
+        cmake --build build --parallel
+        cmake --install build --prefix ../../thirdparty/sentry
+
     - name: Build Ubuntu
       if: runner.os == 'Linux'
       run: |
@@ -63,6 +74,9 @@ jobs:
         cd build
         qmake ../WPanda.pro
         make -j4
+        cp ../thirdparty/sentry/bin/crashpad_handler ./app
+        cp ../thirdparty/sentry/lib/libsentry.so ./app
+        cp ../thirdparty/sentry/lib/libsentry.so ./test
 
     - name: Test Ubuntu
       if: runner.os == 'Linux'
@@ -76,6 +90,16 @@ jobs:
       if: runner.os == 'Windows'
       uses: pbeast/gha-setup-vsdevenv@master
 
+    - name: Compile Sentry SDK
+      if: runner.os == 'Windows'
+      run: |
+        git clone --recursive https://github.com/getsentry/sentry-native.git
+        mkdir -p sentry-native/build
+        cd sentry-native/build
+        cmake .. -B build
+        cmake --build build --config RelWithDebInfo
+        cmake --install build --prefix ../../thirdparty/sentry --config RelWithDebInfo
+
     - name: Build Windows
       if: runner.os == 'Windows'
       run: |
@@ -84,6 +108,10 @@ jobs:
         cd build
         qmake ../WPanda.pro
         jom
+        cp ../thirdparty/sentry/bin/crashpad_handler.exe ./app/release
+        cp ../thirdparty/sentry/bin/sentry.dll ./app/release
+        cp ../thirdparty/sentry/bin/crashpad_wer.dll ./app/release
+        cp ../thirdparty/sentry/bin/sentry.dll ./test/release
 
     - name: Test Windows
       if: runner.os == 'Windows'
@@ -93,6 +121,16 @@ jobs:
 
 # =================================
 
+    - name: Compile Sentry SDK
+      if: runner.os == 'macOS'
+      run: |
+        git clone --recursive https://github.com/getsentry/sentry-native.git
+        mkdir -p sentry-native/build
+        cd sentry-native/build
+        cmake .. -B build -D SENTRY_BACKEND=crashpad -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+        cmake --build build --parallel
+        cmake --install build --prefix ../../thirdparty/sentry
+
     - name: Build macOS
       if: runner.os == 'macOS'
       run: |
@@ -100,6 +138,13 @@ jobs:
         cd build
         qmake ../WPanda.pro -early QMAKE_DEFAULT_LIBDIRS=$(xcrun -show-sdk-path)/usr/lib
         make -j3
+        mkdir -p app/wiredpanda.app/Contents/MacOS
+        mkdir -p app/wiredpanda.app/Contents/Frameworks
+        cp ../thirdparty/sentry/bin/crashpad_handler app/wiredpanda.app/Contents/MacOS/
+        cp ../thirdparty/sentry/lib/libsentry.dylib app/wiredpanda.app/Contents/Frameworks/
+        mkdir -p test/WPanda-test.app/Contents/MacOS
+        mkdir -p test/WPanda-test.app/Contents/Frameworks
+        cp ../thirdparty/sentry/lib/libsentry.dylib test/WPanda-test.app/Contents/Frameworks/
 
     - name: Test macOS
       if: runner.os == 'macOS'
