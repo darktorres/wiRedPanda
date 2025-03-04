@@ -105,6 +105,16 @@ jobs:
         rm ./linuxdeployqt-continuous-x86_64.AppImage
         mv wiRedPanda-$VERSION-x86_64.AppImage wiRedPanda-$VERSION-Ubuntu-Qt5.AppImage
 
+    - name: Upload Debug Symbols to Sentry
+      if: runner.os == 'Linux'
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      run: |
+        sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
+        sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
+        sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
+      shell: bash
+
     - name: Publish Ubuntu
       uses: softprops/action-gh-release@v2
       if: runner.os == 'Linux'
@@ -198,9 +208,16 @@ jobs:
         # workaround for https://bugreports.qt.io/browse/QTBUG-117225
         qmake ../WPanda.pro -early QMAKE_DEFAULT_LIBDIRS=$(xcrun -show-sdk-path)/usr/lib
         make -j3
-        cp ../thirdparty/sentry/bin/crashpad_handler ./app
-        cp ../thirdparty/sentry/lib/libsentry.dylib ./app
-        cp ../thirdparty/sentry/lib/libsentry.dylib ./test
+
+        mkdir -p app/wiredpanda.app/Contents/MacOS
+        mkdir -p app/wiredpanda.app/Contents/Frameworks
+        cp ../thirdparty/sentry/bin/crashpad_handler app/wiredpanda.app/Contents/MacOS/
+        cp ../thirdparty/sentry/lib/libsentry.dylib app/wiredpanda.app/Contents/Frameworks/
+
+        mkdir -p test/WPanda-test.app/Contents/MacOS
+        mkdir -p test/WPanda-test.app/Contents/Frameworks
+        cp ../thirdparty/sentry/lib/libsentry.dylib test/WPanda-test.app/Contents/Frameworks/
+
 
     - name: Test macOS
       if: runner.os == 'macOS'
@@ -214,6 +231,16 @@ jobs:
         cd build/app
         macdeployqt wiredpanda.app -dmg
         mv wiredpanda.dmg wiRedPanda-$VERSION-macOS-Qt5.dmg
+
+    - name: Upload Debug Symbols to Sentry
+      if: runner.os == 'macOS'
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      run: |
+        sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
+        sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
+        sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
+      shell: bash
 
     - name: Publish macOS
       uses: softprops/action-gh-release@v2
