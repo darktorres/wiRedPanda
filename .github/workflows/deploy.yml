@@ -167,7 +167,7 @@ jobs:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       run: |
         ./sentry-cli.exe login --auth-token "$SENTRY_AUTH_TOKEN"
-        ./sentry-cli.exe releases new "wiredpanda@$VERSION"
+        ./sentry-cli.exe releases new "wiredpanda@$VERSION" -p wiredpanda
         ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda build/app/release
       shell: bash
 
