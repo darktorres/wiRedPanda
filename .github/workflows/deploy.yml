@@ -116,7 +116,7 @@ jobs:
       if: runner.os == 'Linux'
       with:
         fail_on_unmatched_files: true
-        files: '*.AppImage'
+        files: 'build/app/wiredpanda'
 
 # =================================
 
