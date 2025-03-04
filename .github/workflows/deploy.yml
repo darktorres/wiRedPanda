@@ -98,18 +98,20 @@ jobs:
       run: |
         cd build/test
         ./WPanda-test -platform offscreen
+        git log
+        git status
 
     - name: Upload Debug Symbols to Sentry
       if: runner.os == 'Linux'
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       run: |
+        git log
+        git status
         sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
         sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
         sentry-cli releases set-commits --auto "wiredpanda@$VERSION"
-        sentry-cli releases propose-version
         sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
-      shell: bash
 
     - name: Publish Ubuntu
       uses: softprops/action-gh-release@v2
@@ -154,6 +156,8 @@ jobs:
       run: |
         cd build
         jom check
+        git log
+        git status
 
     - name: windeployqt
       if: runner.os == 'Windows'
@@ -172,12 +176,12 @@ jobs:
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       run: |
+        git log
+        git status
         ./sentry-cli.exe login --auth-token "$SENTRY_AUTH_TOKEN"
         ./sentry-cli.exe releases new "wiredpanda@$VERSION" -p wiredpanda
         ./sentry-cli.exe releases set-commits --auto "wiredpanda@$VERSION"
-        ./sentry-cli.exe releases propose-version
         ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda build/app/
-      shell: bash
 
     - name: Publish Windows
       uses: softprops/action-gh-release@v2
@@ -221,6 +225,8 @@ jobs:
       run: |
         cd build
         make check
+        git log
+        git status
 
     - name: macdeployqt
       if: runner.os == 'macOS'
@@ -234,12 +240,12 @@ jobs:
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       run: |
+        git log
+        git status
         sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
         sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
         sentry-cli releases set-commits --auto "wiredpanda@$VERSION"
-        sentry-cli releases propose-version
         sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
-      shell: bash
 
     - name: Publish macOS
       uses: softprops/action-gh-release@v2
