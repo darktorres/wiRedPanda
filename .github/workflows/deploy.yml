@@ -156,8 +156,12 @@ jobs:
         Compress-Archive -Path wiredpanda-$env:VERSION -DestinationPath wiRedPanda-$env:VERSION-Windows-Qt5-Portable.zip
 
     - name: Upload Debug Symbols to Sentry
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       run: |
-        sentry-cli upload-dif --org your-org --project your-project build/app/*.pdb
+        sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
+        sentry-cli releases new "wiredpanda@$VERSION"
+        sentry-cli debug-files upload --include-sources -p wiredpanda build/app/release
       shell: bash
       if: runner.os == 'Windows'
 
