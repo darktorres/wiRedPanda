@@ -138,10 +138,10 @@ jobs:
         cd build
         qmake ../WPanda.pro
         jom
-        cp ../thirdparty/sentry/bin/crashpad_handler.exe ./app
-        cp ../thirdparty/sentry/bin/sentry.dll ./app
-        cp ../thirdparty/sentry/bin/crashpad_wer.dll ./app
-        cp ../thirdparty/sentry/bin/sentry.dll ./test
+        cp ../thirdparty/sentry/bin/crashpad_handler.exe ./app/release
+        cp ../thirdparty/sentry/bin/sentry.dll ./app/release
+        cp ../thirdparty/sentry/bin/crashpad_wer.dll ./app/release
+        cp ../thirdparty/sentry/bin/sentry.dll ./test/release
 
     - name: Test Windows
       if: runner.os == 'Windows'
