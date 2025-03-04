@@ -98,15 +98,13 @@ jobs:
       run: |
         cd build/test
         ./WPanda-test -platform offscreen
-        git log
-        git status
 
     - name: Upload Debug Symbols to Sentry
       if: runner.os == 'Linux'
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       run: |
-        git log
+        git checkout master
         git status
         sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
         sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
@@ -156,8 +154,6 @@ jobs:
       run: |
         cd build
         jom check
-        git log
-        git status
 
     - name: windeployqt
       if: runner.os == 'Windows'
@@ -176,7 +172,7 @@ jobs:
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       run: |
-        git log
+        git checkout master
         git status
         ./sentry-cli.exe login --auth-token "$SENTRY_AUTH_TOKEN"
         ./sentry-cli.exe releases new "wiredpanda@$VERSION" -p wiredpanda
@@ -225,8 +221,6 @@ jobs:
       run: |
         cd build
         make check
-        git log
-        git status
 
     - name: macdeployqt
       if: runner.os == 'macOS'
@@ -240,7 +234,7 @@ jobs:
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       run: |
-        git log
+        git checkout master
         git status
         sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
         sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
