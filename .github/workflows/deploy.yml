@@ -108,8 +108,8 @@ jobs:
         git status
         sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
         sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
-        sentry-cli releases set-commits --auto "wiredpanda@$VERSION"
         sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
+        sentry-cli releases set-commits --auto "wiredpanda@$VERSION" --log-level=debug
 
     - name: Publish Ubuntu
       uses: softprops/action-gh-release@v2
@@ -176,8 +176,8 @@ jobs:
         git status
         ./sentry-cli.exe login --auth-token "$SENTRY_AUTH_TOKEN"
         ./sentry-cli.exe releases new "wiredpanda@$VERSION" -p wiredpanda
-        ./sentry-cli.exe releases set-commits --auto "wiredpanda@$VERSION"
         ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda build/app/
+        ./sentry-cli.exe releases set-commits --auto "wiredpanda@$VERSION" --log-level=debug
 
     - name: Publish Windows
       uses: softprops/action-gh-release@v2
@@ -238,8 +238,8 @@ jobs:
         git status
         sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
         sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
-        sentry-cli releases set-commits --auto "wiredpanda@$VERSION"
         sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
+        sentry-cli releases set-commits --auto "wiredpanda@$VERSION" --log-level=debug
 
     - name: Publish macOS
       uses: softprops/action-gh-release@v2
