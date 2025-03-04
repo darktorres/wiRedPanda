@@ -154,6 +154,7 @@ jobs:
       run : |
         cp -r examples build/app/release
         cd build/app/release
+        dir
         windeployqt --compiler-runtime wiredpanda.exe
         rm wiredpanda_pch.obj
         rm wiredpanda_pch.pch
@@ -168,7 +169,7 @@ jobs:
       run: |
         ./sentry-cli.exe login --auth-token "$SENTRY_AUTH_TOKEN"
         ./sentry-cli.exe releases new "wiredpanda@$VERSION" -p wiredpanda
-        ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda build/app/release
+        ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda build/app/
       shell: bash
 
     - name: Publish Windows
