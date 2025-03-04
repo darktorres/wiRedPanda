@@ -34,6 +34,13 @@ jobs:
           LATEST_VERSION=$(curl -s https://api.github.com/repos/getsentry/sentry-cli/releases/latest | jq -r .tag_name)
           curl -LO "https://github.com/getsentry/sentry-cli/releases/download/$LATEST_VERSION/sentry-cli-Windows-x86_64.exe"
           mv sentry-cli-Windows-x86_64.exe sentry-cli.exe
+          
+          ACTUAL_VERSION=$(./sentry-cli.exe -V 2>&1 | tr -d '\r')
+
+          if [[ ! "$ACTUAL_VERSION" =~ ^sentry-cli ]]; then
+            echo "Downloaded Sentry CLI binary is invalid!" >&2
+            exit 1
+          fi
         else
           curl -sL https://sentry.io/get-cli/ | bash
         fi
@@ -92,19 +99,6 @@ jobs:
         cd build/test
         ./WPanda-test -platform offscreen
 
-    - name: linuxdeployqt
-      if: runner.os == 'Linux'
-      run: |
-        mkdir appimage
-        cp app/resources/wpanda.desktop appimage/wpanda.desktop
-        cp app/resources/wpanda.svg appimage/wpanda_icon.svg
-        cp build/app/wiredpanda appimage
-        wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-        chmod +x ./linuxdeployqt-continuous-x86_64.AppImage
-        VERSION=$VERSION ./linuxdeployqt-continuous-x86_64.AppImage appimage/wiredpanda -appimage
-        rm ./linuxdeployqt-continuous-x86_64.AppImage
-        mv wiRedPanda-$VERSION-x86_64.AppImage wiRedPanda-$VERSION-Ubuntu-Qt5.AppImage
-
     - name: Upload Debug Symbols to Sentry
       if: runner.os == 'Linux'
       env:
@@ -112,6 +106,7 @@ jobs:
       run: |
         sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
         sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
+        sentry-cli releases set-commits --auto "wiredpanda@$VERSION"
         sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
       shell: bash
 
@@ -178,6 +173,7 @@ jobs:
       run: |
         ./sentry-cli.exe login --auth-token "$SENTRY_AUTH_TOKEN"
         ./sentry-cli.exe releases new "wiredpanda@$VERSION" -p wiredpanda
+        ./sentry-cli.exe releases set-commits --auto "wiredpanda@$VERSION"
         ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda build/app/
       shell: bash
 
@@ -239,6 +235,7 @@ jobs:
       run: |
         sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
         sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
+        sentry-cli releases set-commits --auto "wiredpanda@$VERSION"
         sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
       shell: bash
 
