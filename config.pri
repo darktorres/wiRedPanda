@@ -105,7 +105,7 @@ msvc {
     QMAKE_LFLAGS_DEBUG += /DEBUG
 
     QMAKE_CXXFLAGS_RELEASE += /Zi
-    QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF /PDB:release/my_app.pdb
+    QMAKE_LFLAGS_RELEASE += /DEBUG:FULL /OPT:REF /OPT:ICF /INCREMENTAL:NO
 } else {
     QMAKE_CXXFLAGS += -Wall -Wextra -Wpedantic
 }
