@@ -30,7 +30,13 @@ jobs:
 
     - name: Install Sentry CLI
       run: |
-        curl -sL https://sentry.io/get-cli/ | bash
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/getsentry/sentry-cli/releases/latest | jq -r .tag_name)
+          curl -LO "https://github.com/getsentry/sentry-cli/releases/download/$LATEST_VERSION/sentry-cli-Windows-x86_64.exe"
+          mv sentry-cli-Windows-x86_64.exe sentry-cli.exe
+        else
+          curl -sL https://sentry.io/get-cli/ | bash
+        fi
       shell: bash
     
     - name: Install Qt5 32bit
@@ -156,14 +162,14 @@ jobs:
         Compress-Archive -Path wiredpanda-$env:VERSION -DestinationPath wiRedPanda-$env:VERSION-Windows-Qt5-Portable.zip
 
     - name: Upload Debug Symbols to Sentry
+      if: runner.os == 'Windows'
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       run: |
-        sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
-        sentry-cli releases new "wiredpanda@$VERSION"
-        sentry-cli debug-files upload --include-sources -p wiredpanda build/app/release
+        ./sentry-cli.exe login --auth-token "$SENTRY_AUTH_TOKEN"
+        ./sentry-cli.exe releases new "wiredpanda@$VERSION"
+        ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda build/app/release
       shell: bash
-      if: runner.os == 'Windows'
 
     - name: Publish Windows
       uses: softprops/action-gh-release@v2
