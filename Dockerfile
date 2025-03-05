@@ -11,6 +11,7 @@ RUN apt-get update && \
     build-essential \
     cmake \
     curl \
+    fuse \
     git \
     jq \
     libcurl4-openssl-dev \
@@ -60,46 +61,49 @@ RUN /root/venv/bin/aqt install-qt linux desktop $QT_VERSION --outputdir $QT_DIR
 # Update PATH to include Qt binaries
 ENV PATH="$QT_DIR/$QT_VERSION/gcc_64/bin:$PATH"
 
-# Install and compile Sentry SDK
-RUN git clone --recursive https://github.com/getsentry/sentry-native.git && \
-    mkdir -p sentry-native/build && \
-    cd sentry-native/build && \
-    cmake .. -B build -D SENTRY_BACKEND=crashpad -D CMAKE_BUILD_TYPE=RelWithDebInfo && \
-    cmake --build build --parallel && \
-    cmake --install build --prefix ../../thirdparty/sentry && \
-    cd ../..
-
 # Clone the WiredPanda repository
 RUN git clone --recursive https://github.com/darktorres/wiredpanda
 
+WORKDIR /wiredpanda
+
+# Install and compile Sentry SDK
+RUN git clone --recursive https://github.com/getsentry/sentry-native.git && \
+    mkdir -p ./sentry-native/build && \
+    cd ./sentry-native/build && \
+    cmake .. -B build -D SENTRY_BACKEND=crashpad -D CMAKE_BUILD_TYPE=RelWithDebInfo && \
+    cmake --build build --parallel && \
+    cmake --install build --prefix ../../thirdparty/sentry
+
+WORKDIR /wiredpanda
+
 # Build WiredPanda
-RUN mkdir -p /wiredpanda/build && \
-    cd /wiredpanda/build && \
+RUN  mkdir -p ./build && \
+    cd ./build && \
     qmake ../WPanda.pro && \
     make -j4 && \
     cp ../thirdparty/sentry/bin/crashpad_handler ./app && \
     cp ../thirdparty/sentry/lib/libsentry.so ./app && \
-    cp ../thirdparty/sentry/lib/libsentry.so ./test && \
-    cd ../..
+    cp ../thirdparty/sentry/lib/libsentry.so ./test
+
+WORKDIR /wiredpanda
 
 # Run Tests
-RUN cd /wiredpanda/build/test && ./WPanda-test -platform offscreen && cd ../../..
+RUN cd ./build/test && ./WPanda-test -platform offscreen
+
+WORKDIR /wiredpanda
 
 # Install linuxdeployqt and create AppImage
-RUN mkdir /wiredpanda/appimage && \
-    cp /wiredpanda/app/resources/wpanda.desktop /wiredpanda/appimage/wpanda.desktop && \
-    cp /wiredpanda/app/resources/wpanda.svg /wiredpanda/appimage/wpanda_icon.svg && \
-    cp /wiredpanda/build/app/wiredpanda /wiredpanda/appimage && \
-    cp /wiredpanda/thirdparty/sentry/lib/libsentry.so /wiredpanda/appimage && \
-    cp /wiredpanda/thirdparty/sentry/lib/libsentry.so /wiredpanda/appimage/lib && \
-    wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage && \
-    chmod +x ./linuxdeployqt-continuous-x86_64.AppImage && \
-    VERSION=latest ./linuxdeployqt-continuous-x86_64.AppImage /wiredpanda/appimage/wiredpanda -appimage && \
-    rm ./linuxdeployqt-continuous-x86_64.AppImage && \
-    mv wiRedPanda-latest-x86_64.AppImage wiRedPanda-latest-Ubuntu-Qt5.AppImage
-
-# Set default working directory
-WORKDIR /wiredpanda/build
+# RUN mkdir ./appimage && \
+#     cp ./app/resources/wpanda.desktop ./appimage/wpanda.desktop && \
+#     cp ./app/resources/wpanda.svg ./appimage/wpanda_icon.svg && \
+#     cp ./build/app/wiredpanda ./appimage && \
+#     cp ./thirdparty/sentry/lib/libsentry.so ./appimage && \
+#     cp ./thirdparty/sentry/lib/libsentry.so ./appimage/lib && \
+#     wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage && \
+#     chmod +x ./linuxdeployqt-continuous-x86_64.AppImage && \
+#     VERSION=4 ./linuxdeployqt-continuous-x86_64.AppImage ./appimage/wiredpanda -appimage && \
+#     rm ./linuxdeployqt-continuous-x86_64.AppImage && \
+#     mv wiRedPanda-latest-x86_64.AppImage wiRedPanda-latest-Ubuntu-Qt5.AppImage
 
 # Keep the container running
 CMD ["tail", "-f", "/dev/null"]
