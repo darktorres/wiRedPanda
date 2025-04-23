@@ -583,7 +583,7 @@ void ElementEditor::setCurrentElements(const QList<GraphicElement *> &elements)
     if (m_hasNode) {
         m_ui->comboBoxNode->clear();
         bool hasFoundConnection = false;
-        bool isSourceNode = m_scene->nodeMapping.contains(firstElement->mapId());
+        bool isSourceNode = m_scene->nodeMapping.contains(firstElement->id());
         bool bNodeHasOutput = firstElement->outputPort()->connections().size() > 0;
         bool bNodeHasInput = firstElement->inputPort()->connections().size() > 0;
         // Search if node is already wireless conected to source node.
@@ -598,7 +598,7 @@ void ElementEditor::setCurrentElements(const QList<GraphicElement *> &elements)
 
         if (set.size() > 0) {
             for (auto item : set) {
-                if (item.second == firstElement->mapId()) {
+                if (item.second == firstElement->id()) {
                     auto newLabel = firstElement->label();
                     m_ui->comboBoxNode->setCurrentText(newLabel);
                     hasFoundConnection = true;
@@ -1066,8 +1066,8 @@ void ElementEditor::mapNode()
 
     // If source node already exists and the new label is different, remove and insert new.
     const QString label = m_ui->lineEditElementLabel->text();
-    auto thisNodeSet = m_scene->nodeMapping.value(selectedNode->mapId());
-    auto nodeSet = m_scene->getNodeSet(label, {selectedNode->mapId()});
+    auto thisNodeSet = m_scene->nodeMapping.value(selectedNode->id());
+    auto nodeSet = m_scene->getNodeSet(label, {selectedNode->id()});
     const bool isSourceNode = m_scene->isSourceNode(selectedNode);
     const bool isSourceNodeLabelTaken = nodeSet.size() != 0;
 
@@ -1083,15 +1083,15 @@ void ElementEditor::mapNode()
 
     // If new souceNodeText is empty and label is empty, destroy the connection
     if (isSourceNode && label == "") {
-        m_scene->nodeMapping.remove(selectedNode->mapId());
+        m_scene->nodeMapping.remove(selectedNode->id());
         m_scene->deleteNodeSetConnections(&thisNodeSet);
-        m_scene->nodeMapping.insert(selectedNode->mapId(), thisNodeSet);
+        m_scene->nodeMapping.insert(selectedNode->id(), thisNodeSet);
         return;
     }
 
     if (isSourceNode) {
         selectedNode->setLabel(label);
-        const auto childNodesSet = m_scene->nodeMapping.value(selectedNode->mapId());
+        const auto childNodesSet = m_scene->nodeMapping.value(selectedNode->id());
 
         for (auto &childNodesPair : childNodesSet.values()) {
             const int childNodeId = childNodesPair.second;
@@ -1105,7 +1105,7 @@ void ElementEditor::mapNode()
     QSet<QPair<int, int>> set;
 
     if (selectedNode->inputPort()->connections().size() > 0) {
-        m_scene->nodeMapping.insert(selectedNode->mapId(), set);
+        m_scene->nodeMapping.insert(selectedNode->id(), set);
     }
 
     setCurrentElements({selectedNode});
@@ -1145,7 +1145,7 @@ void ElementEditor::connectNode(const QString label)
     if (selectedNode->label() != "" && (label == "" || label != selectedNode->label())) {
         if (currentNodeSet.size()) {
             m_scene->nodeMapping.remove(currentSourceNodeId);
-            m_scene->deleteNodeSetConnections(&currentNodeSet, selectedNode->mapId());
+            m_scene->deleteNodeSetConnections(&currentNodeSet, selectedNode->id());
             m_scene->nodeMapping.insert(currentSourceNodeId, currentNodeSet);
         }
 
@@ -1158,7 +1158,7 @@ void ElementEditor::connectNode(const QString label)
     }
 
     m_scene->nodeMapping.remove(nextSourceNodeId);
-    nextNodeSet.insert(QPair<int, int>(-1, selectedNode->mapId()));
+    nextNodeSet.insert(QPair<int, int>(-1, selectedNode->id()));
 
     for (auto pair : nextNodeSet) {
         auto *node = qobject_cast<Node *>(m_scene->element(pair.second));
@@ -1175,7 +1175,7 @@ void ElementEditor::connectNode(const QString label)
             const int nodeId = pair.second;
             nextNodeSet.remove(pair);
             node->setIsWireless(true);
-            nextNodeSet.insert(QPair<int, int>(connection->mapId(), nodeId));
+            nextNodeSet.insert(QPair<int, int>(connection->id(), nodeId));
 
             selectedNode->setLabel(label);
         }
