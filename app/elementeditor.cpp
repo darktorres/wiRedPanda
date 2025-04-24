@@ -410,6 +410,10 @@ void ElementEditor::setCurrentElements(const QList<GraphicElement *> &elements)
     auto *firstInput = qobject_cast<GraphicElementInput *>(firstElement);
     auto elementType = firstElement->elementType();
 
+    qDebug() << "firstElm: " << firstElement;
+    qDebug() << "id: " << firstElement->id();
+    qDebug() << "============================";
+
     for (auto *elm : std::as_const(m_elements)) {
         const auto group = elm->elementGroup();
         const auto firstGroup = firstElement->elementGroup();
