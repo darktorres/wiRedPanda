@@ -202,7 +202,7 @@ void WorkSpace::load(QDataStream &stream, QVersionNumber version)
         }
     }
 
-    qDebug() << "m_lastId: " << m_lastId;
+    // qDebug() << "m_lastId: " << m_lastId;
     ElementFactory::setLastId(m_lastId);
 
     m_scene.setSceneRect(m_scene.itemsBoundingRect());
