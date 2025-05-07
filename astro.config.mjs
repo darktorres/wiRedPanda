@@ -4,7 +4,7 @@ import icon from "astro-icon";
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://gibis-unifesp.github.io',
-  base: 'wiRedPanda',
+  site: 'https://gibis-unifesp.github.io/wiRedPanda',
+  base: '/wiRedPanda/',
   integrations: [icon()]
 });
