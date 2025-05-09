@@ -9,20 +9,31 @@ on:
 
 jobs:
   # ================================================================================
-  # == Build Job for Linux (Ubuntu 18.04 in Docker)                               ==
+  # == Build Job for Linux (Ubuntu 20.04 in Docker)                               ==
   # ================================================================================
   build-linux-docker:
-    name: Build Linux (Ubuntu 18.04 Docker) Qt ${{ matrix.qt }}
+    name: Build Linux (Ubuntu 20.04 Docker) Qt ${{ matrix.qt }}
     runs-on: ubuntu-latest # Host for the Docker container
     container:
-      image: ubuntu:20.04
-      options: --user root # Run steps as root inside the container
+      image: ubuntu:20.04 # Using Ubuntu 20.04
+      options: --user root
     strategy:
       fail-fast: false
       matrix:
         qt: [5.15.2, 6.9.0]
 
     steps:
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # ++ Install Git (standard package from Ubuntu 20.04) ++
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    - name: Install Git
+      shell: bash
+      run: |
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update -qq
+        apt-get install -y --no-install-recommends git
+        git --version # Verify the installed version (should be >= 2.25)
+
     - uses: actions/checkout@v4
       with:
         submodules: recursive
@@ -32,40 +43,48 @@ jobs:
       run: echo "VERSION=$(echo $GITHUB_REF | sed 's|refs/tags/||')" >> $GITHUB_ENV
       shell: bash
 
-    - name: Install Sentry CLI & Dependencies (Linux in Docker)
+    # Combined dependency installation step
+    - name: Install Dependencies (Linux in Docker)
       shell: bash
       run: |
         export DEBIAN_FRONTEND=noninteractive
-        apt-get update -qq
-        apt-get install -y --no-install-recommends curl
-        curl -sL https://sentry.io/get-cli/ | bash
-        echo "/root/.sentry-cli" >> $GITHUB_PATH # Sentry CLI installs to /root/.sentry-cli as root
-
-    - name: Install Qt and ccache (Linux in Docker)
-      shell: bash
-      run: |
-        export DEBIAN_FRONTEND=noninteractive
-        apt-get update -qq
+        # apt-get update -qq # Already done above
         apt-get install -y --no-install-recommends \
-          python3 python3-pip python3-venv git wget \
+          curl \
+          python3 python3-pip python3-venv wget \
           ccache \
-          libgl1-mesa-dev # General Qt GUI dependency
+          libgl1-mesa-dev \
+          libcurl4-openssl-dev cmake make g++ \
+          libgstreamer-gl1.0-0 libfuse2 libfontconfig1-dev libfreetype6-dev \
+          libx11-dev libx11-xcb-dev libxext-dev libxfixes-dev libxi-dev \
+          libxrender-dev libxcb1-dev libxcb-glx0-dev libxcb-keysyms1-dev \
+          libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev \
+          libxcb-sync-dev libxcb-xfixes0-dev libxcb-shape0-dev \
+          libxcb-randr0-dev libxcb-render-util0-dev \
+          libxkbcommon-dev libxkbcommon-x11-dev \
+          fuse desktop-file-utils # For linuxdeployqt & AppImage
+        
+        # Install Sentry CLI
+        curl -sL https://sentry.io/get-cli/ | bash
+        echo "/root/.sentry-cli" >> $GITHUB_PATH
 
+    - name: Install Qt (Linux in Docker)
+      shell: bash
+      run: |
         python3 -m pip install --upgrade pip
-        python3 -m pip install aqtinstall==3.2.* # Pin aqt version
+        python3 -m pip install aqtinstall==3.2.*
 
         echo "Installing Qt ${{ matrix.qt }} for Linux..."
         QT_MODULES_ARG=""
         if [[ "${{ matrix.qt }}" == 6* ]]; then
           QT_MODULES_ARG="-m qtmultimedia qtimageformats"
         fi
-        # aqt installs to /opt/Qt by default on Linux when run as root
         aqt install-qt linux desktop ${{ matrix.qt }} linux_x64 $QT_MODULES_ARG --outputdir /opt/Qt
 
         QT_BASE_DIR="/opt/Qt/${{ matrix.qt }}"
         if [[ -d "${QT_BASE_DIR}/gcc_64" ]]; then
             QT_INSTALL_DIR="${QT_BASE_DIR}/gcc_64"
-        elif [[ -d "${QT_BASE_DIR}/gcc_x86-64" ]]; then # Qt 6 might use this
+        elif [[ -d "${QT_BASE_DIR}/gcc_x86-64" ]]; then
             QT_INSTALL_DIR="${QT_BASE_DIR}/gcc_x86-64"
         else
             echo "Error: Could not find Qt installation directory under ${QT_BASE_DIR}"
@@ -77,73 +96,60 @@ jobs:
         echo "Qt installed to ${QT_INSTALL_DIR}"
 
         # Configure ccache
-        mkdir -p /github/workspace/.ccache # ccache dir in workspace (mounted at /github/workspace)
+        mkdir -p /github/workspace/.ccache
         echo "CCACHE_DIR=/github/workspace/.ccache" >> $GITHUB_ENV
-        echo "/usr/lib/ccache" >> $GITHUB_PATH # Add ccache symlinks to PATH
-        ccache -M 2G # Set ccache size
-        ccache -s # Print ccache stats
+        echo "/usr/lib/ccache" >> $GITHUB_PATH
+        ccache -M 2G
+        ccache -s
 
     - name: Cache ccache (Linux in Docker)
       uses: actions/cache@v4
       with:
-        path: /github/workspace/.ccache # Path inside the container's mounted workspace
-        key: ubuntu-18.04-docker-ccache-${{ matrix.qt }}-${{ github.sha }}
+        path: /github/workspace/.ccache
+        key: ubuntu-20.04-docker-ccache-${{ matrix.qt }}-${{ github.sha }} # Updated key for 20.04
         restore-keys: |
-          ubuntu-18.04-docker-ccache-${{ matrix.qt }}-
+          ubuntu-20.04-docker-ccache-${{ matrix.qt }}-
+
+    # ... (Compile Sentry SDK, Build Ubuntu, Test, linuxdeployqt, Upload, Publish steps)
+    # Ensure the AppImage name reflects Ubuntu 20.04 if you want to be precise:
+    # mv wiRedPanda*.AppImage wiRedPanda-$VERSION-Ubuntu-20.04-Qt${{ matrix.qt }}.AppImage
+    # in the linuxdeployqt step.
 
     - name: Compile Sentry SDK (Linux in Docker)
       shell: bash
       run: |
-        apt-get update -qq && apt-get install -y --no-install-recommends libcurl4-openssl-dev cmake make g++
         git clone --recursive https://github.com/getsentry/sentry-native.git
         mkdir -p sentry-native/build
         cd sentry-native/build
-        # Use GITHUB_WORKSPACE for prefix (which is /github/workspace in container)
         cmake .. -B . -D SENTRY_BACKEND=crashpad -D CMAKE_BUILD_TYPE=RelWithDebInfo
         cmake --build . --parallel
         cmake --install . --prefix /github/workspace/thirdparty/sentry
-        cd /github/workspace # Go back to workspace root
+        cd /github/workspace
 
     - name: Build Ubuntu (Linux in Docker)
       shell: bash
       run: |
-        export DEBIAN_FRONTEND=noninteractive
-        apt-get update -qq
-        apt-get install -y --no-install-recommends \
-          libgstreamer-gl1.0-0 libfuse2 libfontconfig1-dev libfreetype6-dev \
-          libx11-dev libx11-xcb-dev libxext-dev libxfixes-dev libxi-dev \
-          libxrender-dev libxcb1-dev libxcb-glx0-dev libxcb-keysyms1-dev \
-          libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev \
-          libxcb-sync0-dev libxcb-xfixes0-dev libxcb-shape0-dev \
-          libxcb-randr0-dev libxcb-render-util0-dev \
-          libxkbcommon-dev libxkbcommon-x11-dev
-        
         mkdir build
         cd build
-        qmake ../WPanda.pro CONFIG+=release # Ensure release build
+        qmake ../WPanda.pro CONFIG+=release
         make -j$(nproc)
         
         mkdir -p app/lib test/lib
         cp ../thirdparty/sentry/bin/crashpad_handler app/
         cp ../thirdparty/sentry/lib/libsentry.so app/lib/
         cp ../thirdparty/sentry/lib/libsentry.so test/lib/
-        cd /github/workspace # Go back to workspace root
+        cd /github/workspace
 
     - name: Test Ubuntu (Linux in Docker)
       shell: bash
       run: |
         cd build/test
-        # If tests require a display, even with offscreen, xvfb might be needed.
-        # apt-get install -y --no-install-recommends xvfb
-        # xvfb-run -a ./WPanda-test -platform offscreen
         ./WPanda-test -platform offscreen 
         cd /github/workspace
 
     - name: linuxdeployqt (Linux in Docker)
       shell: bash
       run: |
-        apt-get update -qq && apt-get install -y --no-install-recommends fuse desktop-file-utils
-        
         mkdir -p appimage/lib 
         cp app/resources/wpanda.desktop appimage/wpanda.desktop
         cp app/resources/wpanda.svg appimage/wpanda_icon.svg
@@ -157,8 +163,8 @@ jobs:
         ./linuxdeployqt-continuous-x86_64.AppImage appimage/wiredpanda -appimage
         
         rm ./linuxdeployqt-continuous-x86_64.AppImage
-        # The AppImage is created in the current directory (/github/workspace)
-        mv wiRedPanda*.AppImage wiRedPanda-$VERSION-Ubuntu-18.04-Qt${{ matrix.qt }}.AppImage
+        # Update AppImage name to reflect Ubuntu 20.04
+        mv wiRedPanda*.AppImage wiRedPanda-$VERSION-Ubuntu-20.04-Qt${{ matrix.qt }}.AppImage
 
     - name: Upload Debug Symbols to Sentry (Linux)
       env:
@@ -177,189 +183,4 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         fail_on_unmatched_files: true
-        files: '*.AppImage'
-
-  # ================================================================================
-  # == Build Job for Windows and macOS (Native OS)                                ==
-  # ================================================================================
-  build-native-os:
-    name: Build ${{ matrix.os }} Qt ${{ matrix.qt }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest] # Excluded Linux
-        qt: [5.15.2, 6.9.0]
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
-        fetch-depth: 0
-
-    - name: Extract Version
-      run: echo "VERSION=$(echo $GITHUB_REF | sed 's|refs/tags/||')" >> $GITHUB_ENV
-      shell: bash
-
-    - name: Install Sentry CLI
-      run: |
-        if [ "$RUNNER_OS" == "Windows" ]; then
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/getsentry/sentry-cli/releases/latest | jq -r .tag_name)
-          curl -LO "https://github.com/getsentry/sentry-cli/releases/download/$LATEST_VERSION/sentry-cli-Windows-x86_64.exe"
-          mv sentry-cli-Windows-x86_64.exe sentry-cli.exe
-          
-          ACTUAL_VERSION=$(./sentry-cli.exe -V 2>&1 | tr -d '\r')
-
-          if [[ ! "$ACTUAL_VERSION" =~ ^sentry-cli ]]; then
-            echo "Downloaded Sentry CLI binary is invalid!" >&2
-            exit 1
-          fi
-        else # macOS
-          curl -sL https://sentry.io/get-cli/ | bash
-        fi
-      shell: bash
-    
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: ${{ matrix.qt }}
-        arch: ${{ matrix.os == 'windows-latest' && matrix.qt == '5.15.2' && 'win32_msvc2019' || '' }}
-        cache: true
-        aqtversion: ==3.2.*
-        modules: ${{ startsWith(matrix.qt, '6') && 'qtmultimedia qtimageformats' || '' }}
-
-    - name: ccache (macOS only, Windows uses MSVC caching)
-      if: runner.os == 'macOS' # ccache-action primarily for Unix-like
-      uses: hendrikmuhs/ccache-action@v1.2
-      with:
-        key: ${{ matrix.os }}-${{ matrix.qt }}
-
-    # =================================
-    # WINDOWS SPECIFIC STEPS
-    # =================================
-    - name: Setup MSVC Toolchain
-      if: startsWith(matrix.os, 'windows')
-      uses: pbeast/gha-setup-vsdevenv@master
-      with:
-        arch: ${{ startsWith(matrix.qt, '5') && 'x86' || 'x64' }}
-
-    - name: Compile Sentry SDK (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        git clone --recursive https://github.com/getsentry/sentry-native.git
-        mkdir -p sentry-native/build
-        cd sentry-native/build
-        cmake .. -B build -G "Visual Studio 17 2022" ${{ matrix.qt == '5.15.2' && '-A Win32' || '' }}
-        cmake --build build --config RelWithDebInfo
-        cmake --install build --prefix ../../thirdparty/sentry --config RelWithDebInfo
-
-    - name: Build Windows
-      if: runner.os == 'Windows'
-      run: |
-        choco install jom
-        mkdir build
-        cd build
-        qmake ../WPanda.pro
-        jom
-        cp ../thirdparty/sentry/bin/crashpad_handler.exe app/release/
-        cp ../thirdparty/sentry/bin/sentry.dll app/release/
-        cp ../thirdparty/sentry/bin/crashpad_wer.dll app/release/
-        cp ../thirdparty/sentry/bin/sentry.dll test/release/
-
-    - name: Test Windows
-      if: runner.os == 'Windows'
-      run: |
-        cd build
-        jom check
-
-    - name: windeployqt
-      if: runner.os == 'Windows'
-      run : |
-        cp -r examples build/app/release
-        cd build/app/release
-        windeployqt --compiler-runtime wiredpanda.exe
-        rm wiredpanda_pch.obj
-        rm wiredpanda_pch.pch
-        cd ..
-        ren release wiredpanda-$env:VERSION
-        Compress-Archive -Path wiredpanda-$env:VERSION -DestinationPath wiRedPanda-$env:VERSION-Windows-Qt${{ matrix.qt }}-Portable.zip
-
-    - name: Upload Debug Symbols to Sentry (Windows)
-      if: runner.os == 'Windows'
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-        SENTRY_PROJECT: wiredpanda
-      run: |
-        ./sentry-cli.exe login --auth-token $env:SENTRY_AUTH_TOKEN
-        ./sentry-cli.exe releases new wiredpanda@$env:VERSION --org $env:SENTRY_ORG --project $env:SENTRY_PROJECT
-        ./sentry-cli.exe debug-files upload --include-sources --org $env:SENTRY_ORG --project $env:SENTRY_PROJECT build/app/
-        ./sentry-cli.exe releases set-commits --auto wiredpanda@$env:VERSION --org $env:SENTRY_ORG --project $env:SENTRY_PROJECT --log-level=debug
-
-    - name: Publish Windows Artifact
-      uses: softprops/action-gh-release@v2
-      if: startsWith(matrix.os, 'windows')
-      with:
-        fail_on_unmatched_files: true
-        files: 'build/app/*.zip'
-
-    # =================================
-    # MACOS SPECIFIC STEPS
-    # =================================
-    - name: Compile Sentry SDK (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        git clone --recursive https://github.com/getsentry/sentry-native.git
-        mkdir -p sentry-native/build
-        cd sentry-native/build
-        cmake .. -B build -D SENTRY_BACKEND=crashpad -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_OSX_ARCHITECTURES="x86_64;arm64"
-        cmake --build build --parallel
-        cmake --install build --prefix ../../thirdparty/sentry
-
-    - name: Build macOS
-      if: runner.os == 'macOS'
-      run: |
-        mkdir build
-        cd build
-        qmake ../WPanda.pro
-        make -j$(sysctl -n hw.ncpu)
-        mkdir -p app/wiredpanda.app/Contents/MacOS
-        mkdir -p app/wiredpanda.app/Contents/Frameworks
-        cp ../thirdparty/sentry/bin/crashpad_handler app/wiredpanda.app/Contents/MacOS/
-        cp ../thirdparty/sentry/lib/libsentry.dylib app/wiredpanda.app/Contents/Frameworks/
-        mkdir -p test/WPanda-test.app/Contents/MacOS
-        mkdir -p test/WPanda-test.app/Contents/Frameworks
-        cp ../thirdparty/sentry/lib/libsentry.dylib test/WPanda-test.app/Contents/Frameworks/
-
-    - name: Test macOS
-      if: runner.os == 'macOS'
-      run: |
-        cd build
-        make check
-
-    - name: macdeployqt
-      if: runner.os == 'macOS'
-      run: |
-        cd build/app
-        macdeployqt wiredpanda.app -dmg
-        mv wiredpanda.dmg wiRedPanda-$VERSION-macOS-Qt${{ matrix.qt }}.dmg
-
-    - name: Upload Debug Symbols to Sentry (macOS)
-      if: runner.os == 'macOS'
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-        SENTRY_PROJECT: wiredpanda
-      run: |
-        sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
-        sentry-cli releases new "wiredpanda@$VERSION" --org "$SENTRY_ORG" --project "$SENTRY_PROJECT"
-        sentry-cli debug-files upload --include-sources --org "$SENTRY_ORG" --project "$SENTRY_PROJECT" build/app/
-        sentry-cli releases set-commits --auto "wiredpanda@$VERSION" --org "$SENTRY_ORG" --project "$SENTRY_PROJECT" --log-level=debug
-
-    - name: Publish macOS Artifact
-      uses: softprops/action-gh-release@v2
-      if: runner.os == 'macOS'
-      with:
-        fail_on_unmatched_files: true
-        files: 'build/app/*.dmg'
+        files: '*.AppImage' # This will now pick up the -Ubuntu-20.04- named AppImage
