@@ -31,8 +31,7 @@ jobs:
       run: |
         export DEBIAN_FRONTEND=noninteractive
         apt-get update -qq
-        apt-get install -y --no-install-recommends git
-        git --version # Verify the installed version (should be >= 2.25)
+        apt-get install -y --no-install-recommends git ca-certificates
 
     - uses: actions/checkout@v4
       with:
