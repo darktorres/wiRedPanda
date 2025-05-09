@@ -15,7 +15,7 @@ jobs:
     name: Build Linux (Ubuntu 18.04 Docker) Qt ${{ matrix.qt }}
     runs-on: ubuntu-latest # Host for the Docker container
     container:
-      image: ubuntu:18.04
+      image: ubuntu:20.04
       options: --user root # Run steps as root inside the container
     strategy:
       fail-fast: false
