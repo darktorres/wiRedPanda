@@ -70,11 +70,28 @@ jobs:
       if: runner.os == 'Windows'
       uses: pbeast/gha-setup-vsdevenv@master
 
-    - name: Build (Ninja)
+    - name: Build (Ninja - Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cmake -S . -B build -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_PREFIX_PATH="$QT_INSTALL_PATH"
+        cmake --build build
+
+    - name: Build (Ninja - macOS)
+      if: runner.os == 'macOS'
+      run: |
+        cmake -S . -B build -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_PREFIX_PATH="$QT_INSTALL_PATH"
+        cmake --build build
+
+    - name: Build (Ninja - Windows)
+      if: runner.os == 'Windows'
       run: |
         cmake -S . -B build -G Ninja `
           -DCMAKE_BUILD_TYPE=Release `
-          -DCMAKE_PREFIX_PATH="$QT_INSTALL_PATH"
+          -DCMAKE_PREFIX_PATH="$env:QT_INSTALL_PATH"
         cmake --build build
 
     - name: Test (Linux)
