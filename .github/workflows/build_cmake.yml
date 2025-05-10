@@ -1,7 +1,7 @@
 # Copyright 2015 - 2025, GIBIS-Unifesp and the wiRedPanda contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-name: Build CMake
+name: Build CMake (Ninja)
 
 on:
   push:
@@ -21,8 +21,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         qt_version: [5.12.12, 5.13.2, 5.14.2, 5.15.2, 6.2.4, 6.3.2, 6.4.3, 6.5.3, 6.6.3, 6.7.3, 6.8.3, 6.9.0]
-
-# =================================
 
     runs-on: ${{ matrix.os }}
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
@@ -54,58 +52,42 @@ jobs:
         cache: true
         aqtversion: ==3.2.*
 
+    - name: Install Ninja on Linux
+      if: runner.os == 'Linux'
+      run: sudo apt update && sudo apt install -y ninja-build
+
+    - name: Install Ninja on Windows
+      if: runner.os == 'Windows'
+      run: choco install ninja -y
+
+    - name: Install Ninja on macOS
+      if: runner.os == 'macOS'
+      run: brew install ninja
+
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: ${{ matrix.os }}-${{ matrix.qt_version }}
 
-# =================================
-
-    - name: Build Ubuntu
-      if: runner.os == 'Linux'
-      run: |
-        cmake -S . -B build \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_PREFIX_PATH=$QT_INSTALL_PATH
-        cmake --build build
-
-    - name: Test Ubuntu
-      if: runner.os == 'Linux'
-      run: |
-        cd build
-        ./test -platform offscreen
-
-# =================================
-
     - name: Setup MSVC Toolchain
       if: runner.os == 'Windows'
       uses: pbeast/gha-setup-vsdevenv@master
 
-    - name: Build Windows
-      if: runner.os == 'Windows'
+    - name: Build (Ninja)
       run: |
-        cmake -S . -B build `
-          -DCMAKE_PREFIX_PATH=$QT_INSTALL_PATH
+        cmake -S . -B build -G Ninja `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DCMAKE_PREFIX_PATH="$QT_INSTALL_PATH"
         cmake --build build
 
-    - name: Test Windows
+    - name: Test (Linux)
+      if: runner.os == 'Linux'
+      run: ./build/test -platform offscreen
+
+    - name: Test (Windows)
       if: runner.os == 'Windows'
-      run: |
-        cd build/Debug
-        ./test.exe
+      run: ./build/test.exe
 
-# =================================
-
-    - name: Build macOS
+    - name: Test (macOS)
       if: runner.os == 'macOS'
-      run: |
-        cmake -S . -B build \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_PREFIX_PATH=$QT_INSTALL_PATH
-        cmake --build build
-
-    - name: Test macOS
-      if: runner.os == 'macOS'
-      run: |
-        cd build
-        ./test
+      run: ./build/test
