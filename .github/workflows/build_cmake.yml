@@ -5,9 +5,6 @@ name: Build CMake (Ninja)
 
 on:
   push:
-    branches-ignore:
-      - master
-      - wasm
 
   pull_request:
     branches:
