@@ -5,51 +5,89 @@ name: Build qmake
 
 on:
   push:
-    branches-ignore:
-      - master
-      - wasm
-
-  pull_request:
-    branches:
-      - master
-    types: [opened, synchronize, reopened]
 
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        qt: [5.12.12, 5.13.2, 5.14.2, 5.15.2, 6.2.4, 6.3.2, 6.4.3, 6.5.3, 6.6.3, 6.7.3, 6.8.3, 6.9.0]
+        os: [ubuntu-latest]
+        qt: [5.15.2]
 
 # =================================
-
     runs-on: ${{ matrix.os }}
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+
+    container:
+      image: ubuntu:20.04
+      options: --privileged
 
     steps:
+    - name: Install dependencies
+      run: |
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update
+        apt-get install -y \
+          build-essential \
+          cmake \
+          curl \
+          git \
+          jq \
+          libasound2 \
+          libcups2 \
+          libcurl4-openssl-dev \
+          libfontconfig1-dev \
+          libfreetype6-dev \
+          libfuse2 \
+          libgstreamer-gl1.0-0 \
+          libx11-dev \
+          libx11-xcb-dev \
+          libxcb-glx0-dev \
+          libxcb-icccm4-dev \
+          libxcb-image0-dev \
+          libxcb-keysyms1-dev \
+          libxcb-randr0-dev \
+          libxcb-render-util0-dev \
+          libxcb-shape0-dev \
+          libxcb-shm0-dev \
+          libxcb-sync0-dev \
+          libxcb-xfixes0-dev \
+          libxcb1-dev \
+          libxext-dev \
+          libxfixes-dev \
+          libxi-dev \
+          libxkbcommon-dev \
+          libxkbcommon-x11-dev \
+          libxrender-dev \
+          python3 \
+          python3-pip \
+          python3-setuptools \
+          python3-wheel \
+          sudo \
+          wget
+
     - uses: actions/checkout@v4
       with:
         submodules: recursive
         fetch-depth: 0
 
+    - name: Extract Version
+      run: echo "VERSION=$(echo $GITHUB_REF | sed 's|refs/tags/||')" >> $GITHUB_ENV
+      shell: bash
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:
         version: ${{ matrix.qt }}
-        cache: true
-        aqtversion: ==3.2.*
-        modules: ${{ startsWith(matrix.qt, '6') && 'qtmultimedia qtimageformats' || '' }}
+        aqtversion: ==3.1.*
+        modules: ${{ startsWith(matrix.qt, '6') && 'qtmultimedia qtimageformats debug_info' || 'debug_info' }}
+        setup-python: 'false'
 
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
-        key: ${{ matrix.os }}-${{ matrix.qt }}
-
-# =================================
+        key: ${{ matrix.qt }}
 
     - name: Build Ubuntu
-      if: runner.os == 'Linux'
       run: |
         mkdir build
         cd build
@@ -57,44 +95,24 @@ jobs:
         make -j4
 
     - name: Test Ubuntu
-      if: runner.os == 'Linux'
       run: |
         cd build/test
         ./WPanda-test -platform offscreen
 
-# =================================
-
-    - name: Setup MSVC Toolchain
-      if: runner.os == 'Windows'
-      uses: pbeast/gha-setup-vsdevenv@master
-
-    - name: Build Windows
-      if: runner.os == 'Windows'
+    - name: linuxdeployqt
       run: |
-        choco install jom
-        mkdir build
-        cd build
-        qmake ../WPanda.pro
-        jom
+        mkdir -p appimage
+        cp app/resources/wpanda.desktop appimage/wpanda.desktop
+        cp app/resources/wpanda.svg appimage/wpanda_icon.svg
+        cp build/app/wiredpanda appimage
+        wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+        chmod +x ./linuxdeployqt-continuous-x86_64.AppImage
+        VERSION=$VERSION ./linuxdeployqt-continuous-x86_64.AppImage appimage/wiredpanda -appimage
+        rm ./linuxdeployqt-continuous-x86_64.AppImage
+        mv wiRedPanda-$VERSION-x86_64.AppImage wiRedPanda-$VERSION-Ubuntu-Qt${{ matrix.qt }}.AppImage
 
-    - name: Test Windows
-      if: runner.os == 'Windows'
-      run: |
-        cd build
-        jom check
-
-# =================================
-
-    - name: Build macOS
-      if: runner.os == 'macOS'
-      run: |
-        mkdir build
-        cd build
-        qmake ../WPanda.pro
-        make -j3
-
-    - name: Test macOS
-      if: runner.os == 'macOS'
-      run: |
-        cd build
-        make check
+    - name: Publish Ubuntu
+      uses: softprops/action-gh-release@v2
+      with:
+        fail_on_unmatched_files: true
+        files: '*.AppImage'
