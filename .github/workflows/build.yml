@@ -100,7 +100,7 @@ jobs:
         cache: true
         aqtversion: ==3.1.*
         modules: ${{ startsWith(matrix.qt, '6') && 'qtmultimedia qtimageformats debug_info' || 'debug_info' }}
-        setup-python: 'false'
+        setup-python: ${{ matrix.os == 'ubuntu-latest' && 'false' || 'true' }}
 
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
@@ -126,6 +126,10 @@ jobs:
         cd build
         qmake ../WPanda.pro
         make -j4
+        mkdir -p app/lib test/lib
+        cp ../thirdparty/sentry/bin/crashpad_handler app/
+        cp ../thirdparty/sentry/lib/libsentry.so app/lib/
+        cp ../thirdparty/sentry/lib/libsentry.so test/lib/
 
     - name: Test Ubuntu
       if: runner.os == 'Linux'
@@ -135,10 +139,11 @@ jobs:
     - name: linuxdeployqt
       if: runner.os == 'Linux'
       run: |
-        mkdir -p appimage
+        mkdir -p appimage appimage/lib
         cp app/resources/wpanda.desktop appimage/wpanda.desktop
         cp app/resources/wpanda.svg appimage/wpanda_icon.svg
         cp build/app/wiredpanda appimage
+        cp thirdparty/sentry/lib/libsentry.so appimage/lib/
         wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
         chmod +x ./linuxdeployqt-continuous-x86_64.AppImage
         VERSION=$VERSION ./linuxdeployqt-continuous-x86_64.AppImage appimage/wiredpanda -appimage
