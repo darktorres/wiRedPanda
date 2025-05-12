@@ -62,8 +62,8 @@ jobs:
           libxkbcommon-x11-dev \
           libxrender-dev \
           python3.10 \
-          python3.10-setuptools \
-          python3.10-wheel \
+          python3.10-dev \
+          python3.10-venv \
           python3-pip \
           ninja-build \
           sudo \
