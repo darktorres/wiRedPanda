@@ -28,7 +28,7 @@ jobs:
         apt-get install -y software-properties-common
         add-apt-repository ppa:deadsnakes/ppa
         apt-get update
-        apt-get install -y python3.10
+        apt-get install -y curl python3.10
         ln -sf /usr/bin/python3.10 /usr/bin/python3
         curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py
         python3 get-pip.py
@@ -41,7 +41,6 @@ jobs:
         apt-get install -y \
           build-essential \
           cmake \
-          curl \
           git \
           jq \
           libasound2 \
