@@ -62,13 +62,12 @@ jobs:
           libxkbcommon-x11-dev \
           libxrender-dev \
           python3.10 \
-          python3.10-dev \
-          python3.10-venv \
-          python3-pip \
           ninja-build \
           sudo \
           wget
         ln -sf /usr/bin/python3.10 /usr/bin/python3
+        curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+        python3 get-pip.py
         python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
     - uses: actions/checkout@v4
