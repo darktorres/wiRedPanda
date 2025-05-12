@@ -20,6 +20,19 @@ jobs:
     container: ${{ matrix.os == 'ubuntu-latest' && 'ubuntu:20.04' || '' }}
 
     steps:
+    - name: Install Python Linux
+      if: runner.os == 'Linux'
+      run: |
+        apt-get update
+        apt-get install -y software-properties-common
+        add-apt-repository ppa:deadsnakes/ppa
+        apt-get update
+        apt-get install python3.10
+        ln -sf /usr/bin/python3.10 /usr/bin/python3
+        curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+        python3 get-pip.py
+        python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
+
     - name: Install Linux dependencies
       if: runner.os == 'Linux'
       run: |
@@ -57,10 +70,6 @@ jobs:
           libxkbcommon-dev \
           libxkbcommon-x11-dev \
           libxrender-dev \
-          python3 \
-          python3-pip \
-          python3-setuptools \
-          python3-wheel \
           ninja-build \
           sudo \
           wget
@@ -98,7 +107,7 @@ jobs:
         version: ${{ matrix.qt }}
         arch: ${{ matrix.os == 'windows-latest' && matrix.qt == '5.15.2' && 'win32_msvc2019' || '' }}
         cache: true
-        aqtversion: ==3.1.*
+        aqtversion: ==3.2.*
         modules: ${{ startsWith(matrix.qt, '6') && 'qtmultimedia qtimageformats debug_info' || 'debug_info' }}
         setup-python: ${{ matrix.os == 'ubuntu-latest' && 'false' || 'true' }}
 
@@ -146,20 +155,21 @@ jobs:
         cp thirdparty/sentry/lib/libsentry.so appimage/lib/
         wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
         chmod +x ./linuxdeployqt-continuous-x86_64.AppImage
-        VERSION=$VERSION ./linuxdeployqt-continuous-x86_64.AppImage appimage/wiredpanda -appimage
+        ./linuxdeployqt-continuous-x86_64.AppImage --appimage-extract
+        VERSION=$VERSION ./squashfs-root/usr/bin/linuxdeployqt ./appimage/wiredpanda -appimage
         rm ./linuxdeployqt-continuous-x86_64.AppImage
         mv wiRedPanda-$VERSION-x86_64.AppImage wiRedPanda-$VERSION-Ubuntu-Qt${{ matrix.qt }}.AppImage
 
-    - name: Upload Debug Symbols to Sentry
-      if: runner.os == 'Linux'
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      run: |
-        sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
-        sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
-        sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
-        sentry-cli debug-files upload --include-sources -p wiredpanda $QT_ROOT_DIR
-        sentry-cli releases set-commits --auto "wiredpanda@$VERSION" --log-level=debug
+    # - name: Upload Debug Symbols to Sentry
+    #   if: runner.os == 'Linux'
+    #   env:
+    #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    #   run: |
+    #     sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
+    #     sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
+    #     sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
+    #     sentry-cli debug-files upload --include-sources -p wiredpanda $QT_ROOT_DIR
+    #     sentry-cli releases set-commits --auto "wiredpanda@$VERSION" --log-level=debug
 
     - name: Publish Ubuntu
       uses: softprops/action-gh-release@v2
@@ -217,16 +227,16 @@ jobs:
         ren release wiredpanda-$env:VERSION
         Compress-Archive -Path wiredpanda-$env:VERSION -DestinationPath wiRedPanda-$env:VERSION-Windows-Qt${{ matrix.qt }}-Portable.zip
 
-    - name: Upload Debug Symbols to Sentry
-      if: runner.os == 'Windows'
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      run: |
-        ./sentry-cli.exe login --auth-token $env:SENTRY_AUTH_TOKEN
-        ./sentry-cli.exe releases new wiredpanda@$env:VERSION -p wiredpanda
-        ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda build/app/
-        ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda D:/a/wiRedPanda/Qt/
-        ./sentry-cli.exe releases set-commits --auto wiredpanda@$env:VERSION --log-level=debug
+    # - name: Upload Debug Symbols to Sentry
+    #   if: runner.os == 'Windows'
+    #   env:
+    #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    #   run: |
+    #     ./sentry-cli.exe login --auth-token $env:SENTRY_AUTH_TOKEN
+    #     ./sentry-cli.exe releases new wiredpanda@$env:VERSION -p wiredpanda
+    #     ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda build/app/
+    #     ./sentry-cli.exe debug-files upload --include-sources -p wiredpanda D:/a/wiRedPanda/Qt/
+    #     ./sentry-cli.exe releases set-commits --auto wiredpanda@$env:VERSION --log-level=debug
 
     - name: Publish Windows
       if: runner.os == 'Windows'
@@ -281,16 +291,16 @@ jobs:
         macdeployqt wiredpanda.app -dmg
         mv wiredpanda.dmg wiRedPanda-$VERSION-macOS-Qt${{ matrix.qt }}.dmg
 
-    - name: Upload Debug Symbols to Sentry
-      if: runner.os == 'macOS'
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      run: |
-        sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
-        sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
-        sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
-        sentry-cli debug-files upload --include-sources -p wiredpanda $QT_ROOT_DIR
-        sentry-cli releases set-commits --auto "wiredpanda@$VERSION" --log-level=debug
+    # - name: Upload Debug Symbols to Sentry
+    #   if: runner.os == 'macOS'
+    #   env:
+    #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    #   run: |
+    #     sentry-cli login --auth-token "$SENTRY_AUTH_TOKEN"
+    #     sentry-cli releases new "wiredpanda@$VERSION" -p wiredpanda
+    #     sentry-cli debug-files upload --include-sources -p wiredpanda build/app/
+    #     sentry-cli debug-files upload --include-sources -p wiredpanda $QT_ROOT_DIR
+    #     sentry-cli releases set-commits --auto "wiredpanda@$VERSION" --log-level=debug
 
     - name: Publish macOS
       if: runner.os == 'macOS'
