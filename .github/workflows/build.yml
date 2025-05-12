@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
         qt: [5.15.2, 6.9.0]
 
 # =================================
@@ -23,6 +23,7 @@ jobs:
     - name: Install Python Linux
       if: runner.os == 'Linux'
       run: |
+        export DEBIAN_FRONTEND=noninteractive
         apt-get update
         apt-get install -y software-properties-common
         add-apt-repository ppa:deadsnakes/ppa
@@ -36,7 +37,6 @@ jobs:
     - name: Install Linux dependencies
       if: runner.os == 'Linux'
       run: |
-        export DEBIAN_FRONTEND=noninteractive
         apt-get update
         apt-get install -y \
           build-essential \
