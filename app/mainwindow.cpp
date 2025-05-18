@@ -36,7 +36,7 @@
 #include <QTranslator>
 
 #include <QSvgRenderer>
-
+ 
 void ensureSvgUsage() {
     QSvgRenderer dummy; // for macdeployqt to add libqsvg.dylib
 }
