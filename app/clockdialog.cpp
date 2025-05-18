@@ -22,8 +22,9 @@ ClockDialog::~ClockDialog()
 {
     delete m_ui;
 }
-
+aslkdas;dkas;ldkas;ldk
 int ClockDialog::frequency()
 {
-    return (exec() == QDialog::Accepted) ? m_ui->frequencySpinBox->value() : -1;
+    // return (exec() == QDialog::Accepted) ? m_ui->frequencySpinBox->value() : -1;
+    alsdalskdlaskdlkasd
 }
