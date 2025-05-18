@@ -1,0 +1,31 @@
+name: Update Qt Translations
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-translations:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Qt tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install qttools6-dev-tools -y
+
+      - name: Run lupdate
+        run: |
+          lupdate WPanda.pro
+
+      - name: Commit updated .ts files
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add app/resources/translations/*.ts
+          git commit -m "Update translation source files via lupdate" || echo "No changes"
+          git push
